@@ -1,16 +1,7 @@
 <script setup>
-// Root shell. Router view and layout are wired in later modules.
+// Root shell: renders the active route.
 </script>
 
 <template>
-  <div id="app">
-    <h1>VitalTrace</h1>
-    <p>Frontend scaffold ready.</p>
-  </div>
+  <router-view />
 </template>
-
-<style>
-:root {
-  font-family: system-ui, sans-serif;
-}
-</style>

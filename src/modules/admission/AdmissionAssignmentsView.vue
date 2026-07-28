@@ -1,3 +1,3 @@
 <template>
-  <div><h2>Asignaciones</h2><p>Asignación de pacientes a médicos — próximamente.</p></div>
+  <div><h2>AdmissionAssignmentsView</h2></div>
 </template>
