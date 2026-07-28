@@ -1,0 +1,120 @@
+/**
+ * VitalTrace base styles.
+ * Applies the design tokens globally: warm canvas, body typography,
+ * accessible focus and headings in the brand heading font.
+ */
+
+@import './theme.css';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background-color: var(--bg-canvas);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Headings use the brand heading font (Sora) */
+h1,
+h2,
+h3 {
+  font-family: var(--font-heading);
+  color: var(--color-navy);
+  line-height: 1.2;
+}
+
+h1 {
+  font-size: var(--fs-title);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+h2 {
+  font-size: var(--fs-section);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+h3 {
+  font-size: var(--fs-subtitle);
+  font-weight: 600;
+}
+
+a {
+  color: var(--action-secondary);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* Visible focus for keyboard navigation (accessibility) */
+:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+  border-radius: var(--radius-sm);
+}
+
+/* Utility: brand card on warm canvas */
+.vt-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-5);
+}
+
+/* Utility: primary action button (one per screen) */
+.vt-btn-primary {
+  font-family: var(--font-body);
+  font-size: var(--fs-button);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--text-on-brand);
+  background: var(--action-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  min-height: var(--touch-min);
+  padding: 0 var(--space-5);
+  cursor: pointer;
+  transition: filter 0.15s ease;
+}
+
+.vt-btn-primary:hover {
+  filter: brightness(1.1);
+}
+
+.vt-btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Utility: secondary action */
+.vt-btn-secondary {
+  font-family: var(--font-body);
+  font-size: var(--fs-button);
+  font-weight: 600;
+  color: var(--action-secondary);
+  background: transparent;
+  border: 1px solid var(--action-secondary);
+  border-radius: var(--radius-md);
+  min-height: var(--touch-min);
+  padding: 0 var(--space-5);
+  cursor: pointer;
+}

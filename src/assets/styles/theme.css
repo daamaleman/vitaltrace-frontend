@@ -1,0 +1,86 @@
+/**
+ * VitalTrace design tokens.
+ * Single source of truth for colors, typography, spacing and radii,
+ * derived from the brand documents (palette, typography, identity).
+ */
+
+:root {
+  /* Brand palette (doc 02) */
+  --color-navy: #01305e;      /* hierarchy, primary action, titles */
+  --color-teal: #017d84;      /* secondary actions, links, emphasis */
+  --color-mint: #60cec8;      /* soft positive states, accents */
+  --color-dark: #283137;      /* main text */
+  --color-surface: #f3f0e9;   /* warm background canvas */
+  --color-white: #ffffff;     /* cards and surfaces */
+
+  /* Functional roles */
+  --bg-canvas: var(--color-surface);
+  --bg-card: var(--color-white);
+  --text-primary: var(--color-dark);
+  --text-on-brand: var(--color-white);
+  --action-primary: var(--color-navy);
+  --action-secondary: var(--color-teal);
+  --accent: var(--color-mint);
+  --border-subtle: #e2ddd1;   /* warm-tinted hairline */
+
+  /* State colors (always paired with text + icon, never color alone) */
+  --state-pending: var(--color-teal);
+  --state-in-review: var(--color-navy);
+  --state-reviewed: var(--color-mint);
+
+  /* Typography families (doc 03) */
+  --font-heading: 'Sora', Arial, sans-serif;
+  --font-body: 'Public Sans', Arial, sans-serif;
+
+  /* Type scale — desktop (doc 03) */
+  --fs-title: 40px;      /* Sora 700 */
+  --fs-section: 32px;    /* Sora 600 */
+  --fs-subtitle: 24px;   /* Sora 600 */
+  --fs-featured: 18px;   /* Public Sans 500 */
+  --fs-body: 16px;       /* Public Sans 400 */
+  --fs-small: 14px;      /* Public Sans 400 — minimum for essential text */
+  --fs-button: 16px;     /* Public Sans 600, +1% tracking */
+
+  /* Line heights */
+  --lh-title: 48px;
+  --lh-section: 40px;
+  --lh-subtitle: 32px;
+  --lh-body: 24px;
+  --lh-small: 20px;
+
+  /* Spacing scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+
+  /* Radii — rounded, soft, per brand (continuity, no hard edges) */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+
+  /* Elevation — subtle, calm */
+  --shadow-card: 0 1px 3px rgba(40, 49, 55, 0.08),
+                 0 1px 2px rgba(40, 49, 55, 0.04);
+
+  /* Minimum touch target (doc 05/06) */
+  --touch-min: 44px;
+
+  /* Focus ring — visible focus for accessibility */
+  --focus-ring: 0 0 0 3px rgba(1, 125, 132, 0.4);
+}
+
+/* Desktop-first, but scale headings down on mobile (doc 03) */
+@media (max-width: 640px) {
+  :root {
+    --fs-title: 32px;
+    --fs-section: 28px;
+    --fs-subtitle: 22px;
+    --lh-title: 40px;
+    --lh-section: 36px;
+    --lh-subtitle: 28px;
+  }
+}
