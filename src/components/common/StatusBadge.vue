@@ -51,6 +51,10 @@ const clinicalMap = {
   INACTIVE: { label: 'Inactivo', color: 'neutral', icon: '•' },
   DISCHARGED: { label: 'Dado de alta', color: 'closed', icon: '✓' },
   ARCHIVED: { label: 'Archivado', color: 'neutral', icon: '•' },
+  // Patient-relative link
+  PENDING: { label: 'Pendiente', color: 'classified', icon: '◐' },
+  REVOKED: { label: 'Revocado', color: 'high', icon: '✕' },
+  EXPIRED: { label: 'Expirado', color: 'neutral', icon: '⊘' },
 }
 
 const config = computed(() => {

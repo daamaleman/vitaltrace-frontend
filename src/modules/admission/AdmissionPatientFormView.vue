@@ -9,6 +9,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { admissionService } from '@/services/admission.service'
 import { mapHttpError } from '@/utils/httpErrors'
 import AppFormField from '@/components/common/AppFormField.vue'
+import RelativesSection from './RelativesSection.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -167,6 +168,8 @@ onMounted(() => {
         </button>
       </div>
     </form>
+
+    <RelativesSection v-if="isEdit" :patient-id="patientId" />
   </div>
 </template>
 

@@ -30,6 +30,21 @@ export const admissionService = {
     return data
   },
 
+  async patientRelatives(patientId) {
+    const { data } = await http.get(`/admission/patients/${patientId}/relatives`)
+    return data.data
+  },
+
+  async addRelative(patientId, payload) {
+    const { data } = await http.post(`/admission/patients/${patientId}/relatives`, payload)
+    return data.data
+  },
+
+  async revokeRelative(linkId) {
+    const { data } = await http.post(`/admission/relative-links/${linkId}/revoke`)
+    return data.data
+  },
+
   async assignments(params = {}) {
     const { data } = await http.get('/professional-assignments', { params })
     return data
