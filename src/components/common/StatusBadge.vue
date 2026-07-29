@@ -46,6 +46,11 @@ const clinicalMap = {
   ATTENDED: { label: 'Atendida', color: 'closed', icon: '✓' },
   CANCELLED: { label: 'Cancelada', color: 'high', icon: '✕' },
   NO_SHOW: { label: 'No asistió', color: 'moderate', icon: '⊘' },
+  // Administrative (patient)
+  PRE_REGISTERED: { label: 'Preregistrado', color: 'classified', icon: '◐' },
+  INACTIVE: { label: 'Inactivo', color: 'neutral', icon: '•' },
+  DISCHARGED: { label: 'Dado de alta', color: 'closed', icon: '✓' },
+  ARCHIVED: { label: 'Archivado', color: 'neutral', icon: '•' },
 }
 
 const config = computed(() => {

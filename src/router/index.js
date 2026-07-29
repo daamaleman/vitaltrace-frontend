@@ -75,6 +75,11 @@ const routes = [
         component: () => import('@/modules/admission/AdmissionPatientFormView.vue'),
       },
       {
+        path: 'patients/:id/edit',
+        name: 'admission-patient-edit',
+        component: () => import('@/modules/admission/AdmissionPatientFormView.vue'),
+      },
+      {
         path: 'accounts',
         name: 'admission-accounts',
         component: () => import('@/modules/admission/AdmissionAccountsView.vue'),

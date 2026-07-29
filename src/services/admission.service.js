@@ -6,12 +6,22 @@ import http from './http'
  */
 export const admissionService = {
   async patients(params = {}) {
-    const { data } = await http.get('/patients', { params })
+    const { data } = await http.get('/admission/patients', { params })
     return data
   },
 
+  async patient(patientId) {
+    const { data } = await http.get(`/admission/patients/${patientId}`)
+    return data.data
+  },
+
   async createPatient(payload) {
-    const { data } = await http.post('/patients', payload)
+    const { data } = await http.post('/admission/patients', payload)
+    return data.data
+  },
+
+  async updatePatient(patientId, payload) {
+    const { data } = await http.put(`/admission/patients/${patientId}`, payload)
     return data.data
   },
 
