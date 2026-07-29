@@ -8,24 +8,24 @@ import { useAuthStore } from '@/stores/auth.store'
 const authStore = useAuthStore()
 
 const doctorMenu = [
-  { name: 'doctor-alerts', label: 'Alerts' },
-  { name: 'doctor-patients', label: 'Patients' },
-  { name: 'doctor-appointments', label: 'Appointments' },
+  { name: 'doctor-alerts', label: 'Alertas' },
+  { name: 'doctor-patients', label: 'Pacientes' },
+  { name: 'doctor-appointments', label: 'Citas' },
 ]
 
 const admissionMenu = [
-  { name: 'admission-patients', label: 'Patients' },
-  { name: 'admission-accounts', label: 'Accounts' },
-  { name: 'admission-assignments', label: 'Assignments' },
-  { name: 'admission-corrections', label: 'Corrections' },
+  { name: 'admission-patients', label: 'Pacientes' },
+  { name: 'admission-accounts', label: 'Cuentas' },
+  { name: 'admission-assignments', label: 'Asignaciones' },
+  { name: 'admission-corrections', label: 'Correcciones' },
 ]
 
 const adminMenu = [
-  { name: 'admin-users', label: 'Users' },
-  { name: 'admin-roles', label: 'Roles & permissions' },
-  { name: 'admin-catalogs', label: 'Catalogs' },
-  { name: 'admin-audit', label: 'Audit' },
-  { name: 'admin-config', label: 'Configuration' },
+  { name: 'admin-users', label: 'Usuarios' },
+  { name: 'admin-roles', label: 'Roles y permisos' },
+  { name: 'admin-catalogs', label: 'Catálogos' },
+  { name: 'admin-audit', label: 'Auditoría' },
+  { name: 'admin-config', label: 'Configuración' },
 ]
 
 const menu = computed(() => {
@@ -39,7 +39,7 @@ const menu = computed(() => {
 <template>
   <aside class="sidebar">
     <div class="sidebar__brand">Vital<strong>Trace</strong></div>
-    <nav class="sidebar__nav" aria-label="Main navigation">
+    <nav class="sidebar__nav" aria-label="Navegación principal">
       <router-link
         v-for="item in menu"
         :key="item.name"

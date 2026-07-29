@@ -7,19 +7,19 @@ export function mapHttpError(error) {
 
   switch (status) {
     case 401:
-      return 'Your session has expired. Please sign in again.'
+      return 'Tu sesión ha expirado. Inicia sesión de nuevo.'
     case 403:
-      return 'You do not have permission to perform this action.'
+      return 'No tienes permiso para realizar esta acción.'
     case 404:
-      return 'The requested resource was not found.'
+      return 'No se encontró el recurso solicitado.'
     case 409:
-      return 'This action conflicts with the current state.'
+      return 'Esta acción entra en conflicto con el estado actual.'
     case 422:
       // Validation errors are shown per-field; this is the fallback text.
-      return error?.message ?? 'Please review the highlighted fields.'
+      return error?.message ?? 'Revisa los campos marcados.'
     case 500:
-      return 'A server error occurred. Please try again later.'
+      return 'Ocurrió un error en el servidor. Intenta de nuevo más tarde.'
     default:
-      return error?.message ?? 'A network error occurred. Please retry.'
+      return error?.message ?? 'Ocurrió un error de red. Intenta de nuevo.'
   }
 }

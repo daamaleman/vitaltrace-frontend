@@ -118,3 +118,8 @@ a:hover {
   padding: 0 var(--space-5);
   cursor: pointer;
 }
+
+.vt-btn-secondary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

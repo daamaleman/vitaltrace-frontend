@@ -35,6 +35,11 @@ const routes = [
         component: () => import('@/modules/doctor/DoctorAlertsView.vue'),
       },
       {
+        path: 'alerts/:id',
+        name: 'doctor-alert-detail',
+        component: () => import('@/modules/doctor/DoctorAlertDetailView.vue'),
+      },
+      {
         path: 'patients',
         name: 'doctor-patients',
         component: () => import('@/modules/doctor/DoctorPatientsView.vue'),

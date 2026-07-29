@@ -11,7 +11,7 @@ export const authService = {
   async login(credentials) {
     await initCsrf()
     const { data } = await http.post('/auth/login', credentials)
-    return data.data
+    return data.data.user
   },
 
   /**

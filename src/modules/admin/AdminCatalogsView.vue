@@ -1,3 +1,3 @@
 <template>
-  <div><h2>AdminCatalogsView</h2></div>
+  <div><h2>Catálogos</h2><p>Gestión de catálogos del sistema — próximamente.</p></div>
 </template>

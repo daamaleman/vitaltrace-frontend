@@ -10,24 +10,49 @@ export const doctorService = {
     return data
   },
 
-  async classifyAlert(alertId, payload) {
+  async alert(alertId) {
+    const { data } = await http.get(`/alerts/${alertId}`)
+    return data.data
+  },
+
+  async alertHistory(params = {}) {
+    const { data } = await http.get('/alert-history', { params })
+    return data
+  },
+
+  async classifyAlert(alertId, payload = {}) {
     const { data } = await http.post(`/alerts/${alertId}/classify`, payload)
     return data.data
   },
 
-  async escalateAlert(alertId, payload) {
+  async escalateAlert(alertId, payload = {}) {
     const { data } = await http.post(`/alerts/${alertId}/escalate`, payload)
     return data.data
   },
 
-  async closeAlert(alertId, payload) {
+  async closeAlert(alertId, payload = {}) {
     const { data } = await http.post(`/alerts/${alertId}/close`, payload)
     return data.data
   },
 
-  async appointments(params = {}) {
-    const { data } = await http.get('/appointments', { params })
+  async patients(params = {}) {
+    const { data } = await http.get('/clinical/patients', { params })
     return data
+  },
+
+  async patient(patientId) {
+    const { data } = await http.get(`/clinical/patients/${patientId}`)
+    return data.data
+  },
+
+  async patientSummary(patientId) {
+    const { data } = await http.get(`/clinical/patients/${patientId}/summary`)
+    return data.data
+  },
+
+  async appointments() {
+    const { data } = await http.get('/clinical/appointments')
+    return data.data
   },
 
   async diagnoses(params = {}) {

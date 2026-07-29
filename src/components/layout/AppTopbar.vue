@@ -12,7 +12,7 @@ const { user, logout } = useAuth()
     <div class="topbar__spacer"></div>
     <div class="topbar__user">
       <span class="topbar__email">{{ user?.email }}</span>
-      <button type="button" class="topbar__logout" @click="logout">Sign out</button>
+      <button type="button" class="topbar__logout" @click="logout">Cerrar sesión</button>
     </div>
   </header>
 </template>

@@ -32,12 +32,15 @@ export const useAuthStore = defineStore('auth', {
   actions: {
     /**
      * Authenticate and load the user profile.
+     *
+     * The login response already includes the user, so we use it directly
+     * instead of firing a separate /me request, which avoids a race with the
+     * freshly issued session cookie.
      */
     async login(credentials) {
       this.loading = true
       try {
-        await authService.login(credentials)
-        this.user = await authService.me()
+        this.user = await authService.login(credentials)
         return this.user
       } finally {
         this.loading = false

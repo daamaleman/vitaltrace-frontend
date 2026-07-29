@@ -1,3 +1,3 @@
 <template>
-  <div><h2>Admin access</h2><p>Reserved login — coming soon.</p></div>
+  <div><h2>Acceso de administrador</h2><p>Inicio de sesión reservado — próximamente.</p></div>
 </template>

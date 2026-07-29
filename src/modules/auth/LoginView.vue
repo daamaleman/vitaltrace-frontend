@@ -24,8 +24,8 @@ const formError = ref('')
 const fieldErrors = ref({})
 
 const roleOptions = [
-  { value: 'DOCTOR', label: 'Doctor' },
-  { value: 'ADMISSION', label: 'Admission' },
+  { value: 'DOCTOR', label: 'Médico' },
+  { value: 'ADMISSION', label: 'Admisión' },
 ]
 
 async function handleSubmit() {
@@ -52,10 +52,10 @@ async function handleSubmit() {
     <div class="login__card vt-card">
       <div class="login__brand">
         <span class="login__logo">Vital<strong>Trace</strong></span>
-        <p class="login__tagline">Continuous clinical follow-up</p>
+        <p class="login__tagline">Seguimiento clínico continuo</p>
       </div>
 
-      <div class="login__roles" role="group" aria-label="Select your role">
+      <div class="login__roles" role="group" aria-label="Selecciona tu rol">
         <button
           v-for="option in roleOptions"
           :key="option.value"
@@ -72,7 +72,7 @@ async function handleSubmit() {
       <form @submit.prevent="handleSubmit">
         <AppFormField
           v-model="email"
-          label="Email"
+          label="Correo electrónico"
           type="email"
           autocomplete="username"
           required
@@ -80,7 +80,7 @@ async function handleSubmit() {
         />
         <AppFormField
           v-model="password"
-          label="Password"
+          label="Contraseña"
           type="password"
           autocomplete="current-password"
           required
@@ -90,11 +90,11 @@ async function handleSubmit() {
         <p v-if="formError" class="login__error" role="alert">{{ formError }}</p>
 
         <button type="submit" class="vt-btn-primary login__submit" :disabled="authStore.loading">
-          {{ authStore.loading ? 'Signing in…' : 'Sign in' }}
+          {{ authStore.loading ? 'Iniciando sesión…' : 'Iniciar sesión' }}
         </button>
       </form>
 
-      <p class="login__note">Academic prototype · Fictional data</p>
+      <p class="login__note">Prototipo académico · Datos ficticios</p>
     </div>
   </div>
 </template>

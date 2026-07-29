@@ -9,26 +9,26 @@ import { useAuthStore } from '@/stores/auth.store'
  * - The XSRF token is read from the cookie and sent back as a header,
  *   which is how Laravel Sanctum validates stateful SPA requests.
  */
+
+/**
+ * In development, Vite proxies /api and /sanctum to the backend, so we use
+ * relative paths (same-origin). In production, the SPA is served from
+ * app.vitaltrace.lat and talks to api.vitaltrace.lat directly.
+ */
+const API_BASE = import.meta.env.DEV ? '' : import.meta.env.VITE_API_URL
+
 const http = axios.create({
-  baseURL: `${import.meta.env.VITE_API_URL}/api/v1`,
+  baseURL: `${API_BASE}/api/v1`,
   withCredentials: true,
+  withXSRFToken: true,
+  xsrfCookieName: 'XSRF-TOKEN',
+  xsrfHeaderName: 'X-XSRF-TOKEN',
   headers: {
     Accept: 'application/json',
     'Content-Type': 'application/json',
   },
 })
 
-/**
- * Read a cookie value by name (used for the XSRF-TOKEN cookie).
- */
-function getCookie(name) {
-  const match = document.cookie.match(new RegExp(`(^|;\\s*)${name}=([^;]*)`))
-  return match ? decodeURIComponent(match[2]) : null
-}
-
-/**
- * Request interceptor: attach the CSRF token on every mutating request.
- */
 http.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -75,7 +75,8 @@ http.interceptors.response.use(
  * This hits the root Sanctum route, not the versioned API.
  */
 export async function initCsrf() {
-  await axios.get(`${import.meta.env.VITE_API_URL}/sanctum/csrf-cookie`, {
+  const base = import.meta.env.DEV ? '' : import.meta.env.VITE_API_URL
+  await axios.get(`${base}/sanctum/csrf-cookie`, {
     withCredentials: true,
   })
 }

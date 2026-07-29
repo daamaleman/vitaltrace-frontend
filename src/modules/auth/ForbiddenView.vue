@@ -1,3 +1,3 @@
 <template>
-  <div><h2>403</h2><p>You do not have permission to access this section.</p></div>
+  <div><h2>403</h2><p>No tienes permiso para acceder a esta sección.</p></div>
 </template>
