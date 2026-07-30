@@ -7,7 +7,7 @@
  * the landing view of their actual role.
  */
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.store'
 import { useAuth } from '@/composables/useAuth'
 import { mapHttpError } from '@/utils/httpErrors'
@@ -16,6 +16,11 @@ import AppFormField from '@/components/common/AppFormField.vue'
 const authStore = useAuthStore()
 const { landingRoute } = useAuth()
 const router = useRouter()
+const route = useRoute()
+
+const idleMessage = route.query.reason === 'idle'
+  ? 'Tu sesión se cerró por inactividad. Inicia sesión de nuevo.'
+  : ''
 
 const selectedRole = ref('DOCTOR')
 const email = ref('')
@@ -68,6 +73,8 @@ async function handleSubmit() {
           {{ option.label }}
         </button>
       </div>
+
+      <p v-if="idleMessage" class="login__idle" role="status">{{ idleMessage }}</p>
 
       <form @submit.prevent="handleSubmit">
         <AppFormField
@@ -179,5 +186,15 @@ async function handleSubmit() {
   color: var(--color-dark);
   opacity: 0.6;
   margin-top: var(--space-5);
+}
+
+.login__idle {
+  background: #fff3e0;
+  color: #8a5300;
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  font-size: var(--fs-small);
+  margin-bottom: var(--space-4);
+  text-align: center;
 }
 </style>

@@ -4,6 +4,10 @@
  */
 import AppSidebar from './AppSidebar.vue'
 import AppTopbar from './AppTopbar.vue'
+import { useIdleTimeout } from '@/composables/useIdleTimeout'
+
+// Auto-logout after 15 minutes of inactivity (§13).
+useIdleTimeout(15)
 </script>
 
 <template>
