@@ -58,6 +58,9 @@ const clinicalMap = {
   // Account / activation
   BLOCKED: { label: 'Bloqueada', color: 'high', icon: '⊘' },
   USED: { label: 'Usado', color: 'closed', icon: '✓' },
+  // Correction request
+  APPROVED: { label: 'Aprobada', color: 'closed', icon: '✓' },
+  REJECTED: { label: 'Rechazada', color: 'high', icon: '✕' },
 }
 
 const config = computed(() => {

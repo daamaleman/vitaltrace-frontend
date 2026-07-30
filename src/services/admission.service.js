@@ -71,8 +71,18 @@ export const admissionService = {
   },
 
   async corrections(params = {}) {
-    const { data } = await http.get('/correction-requests', { params })
-    return data
+    const { data } = await http.get('/admission/corrections', { params })
+    return data.data
+  },
+
+  async approveCorrection(id, response = null) {
+    const { data } = await http.post(`/admission/corrections/${id}/approve`, { response })
+    return data.data
+  },
+
+  async rejectCorrection(id, response) {
+    const { data } = await http.post(`/admission/corrections/${id}/reject`, { response })
+    return data.data
   },
 
   async accounts() {
