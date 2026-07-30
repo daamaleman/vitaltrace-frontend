@@ -1,22 +1,46 @@
 import http from './http'
 
 /**
- * Admin operations (AdminService, §11): users, roles, permissions,
- * audit, configuration and logs.
+ * Admin panel API calls (users, audit, catalogs, roles).
  */
 export const adminService = {
+  // Users
   async users(params = {}) {
-    const { data } = await http.get('/users', { params })
+    const { data } = await http.get('/admin/users', { params })
+    return data.data
+  },
+  async blockUser(userId) {
+    const { data } = await http.post(`/admin/users/${userId}/block`)
+    return data.data
+  },
+  async unblockUser(userId) {
+    const { data } = await http.post(`/admin/users/${userId}/unblock`)
+    return data.data
+  },
+
+  // Audit logs
+  async auditLogs() {
+    const { data } = await http.get('/audit-logs')
     return data
   },
 
-  async roles(params = {}) {
-    const { data } = await http.get('/roles', { params })
+  // Catalogs
+  async specialties() {
+    const { data } = await http.get('/specialties')
+    return data
+  },
+  async medications() {
+    const { data } = await http.get('/medications')
+    return data
+  },
+  async measurementTypes() {
+    const { data } = await http.get('/measurement-types')
     return data
   },
 
-  async auditLogs(params = {}) {
-    const { data } = await http.get('/audit-logs', { params })
+  // Roles
+  async roles() {
+    const { data } = await http.get('/roles')
     return data
   },
 }
