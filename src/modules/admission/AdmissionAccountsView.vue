@@ -199,4 +199,20 @@ onMounted(load)
   border-radius: var(--radius-md); min-height: 34px; padding: 0 var(--space-3); cursor: pointer;
 }
 .acc__btn--danger { color: #b3261e; border-color: #b3261e; }
+
+@media (max-width: 720px) {
+  .acc__table thead { display: none; }
+  .acc__table,
+  .acc__table tbody,
+  .acc__table tr,
+  .acc__table td { display: block; width: 100%; }
+  .acc__table tr {
+    margin-bottom: var(--space-4);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: var(--space-3);
+  }
+  .acc__table td { border: none; padding: var(--space-2) 0; }
+  .acc__actions { justify-content: flex-start; }
+}
 </style>

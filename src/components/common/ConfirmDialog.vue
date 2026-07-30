@@ -63,7 +63,7 @@ function confirm() {
   inset: 0;
   display: grid;
   place-items: center;
-  z-index: 1000;
+  z-index: 1200;
 }
 .dialog__backdrop {
   position: absolute;

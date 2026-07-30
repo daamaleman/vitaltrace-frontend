@@ -247,4 +247,19 @@ onMounted(loadSummary)
 .patient__timeline { list-style: none; display: flex; flex-direction: column; gap: var(--space-5); }
 .patient__timeline-item { padding-left: var(--space-4); border-left: 3px solid var(--color-mint); }
 .patient__summary-text { margin-top: var(--space-2); color: var(--color-dark); }
+
+@media (max-width: 720px) {
+  .patient__table thead { display: none; }
+  .patient__table,
+  .patient__table tbody,
+  .patient__table tr,
+  .patient__table td { display: block; width: 100%; }
+  .patient__table tr {
+    margin-bottom: var(--space-3);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: var(--space-3);
+  }
+  .patient__table td { border: none; padding: var(--space-1) 0; }
+}
 </style>

@@ -137,4 +137,20 @@ onMounted(load)
   color: #b3261e; background: transparent; border: 1px solid #b3261e;
   border-radius: var(--radius-md); min-height: 34px; padding: 0 var(--space-3); cursor: pointer;
 }
+
+@media (max-width: 720px) {
+  .au__table thead { display: none; }
+  .au__table,
+  .au__table tbody,
+  .au__table tr,
+  .au__table td { display: block; width: 100%; }
+  .au__table tr {
+    margin-bottom: var(--space-4);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: var(--space-3);
+  }
+  .au__table td { border: none; padding: var(--space-2) 0; }
+  .au__actions { text-align: left; }
+}
 </style>

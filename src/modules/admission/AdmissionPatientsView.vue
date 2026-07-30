@@ -142,4 +142,20 @@ onMounted(loadPatients)
   border: 1px solid var(--action-secondary); border-radius: var(--radius-md);
   min-height: 36px; padding: 0 var(--space-4); cursor: pointer;
 }
+
+@media (max-width: 720px) {
+  .ap__table thead { display: none; }
+  .ap__table,
+  .ap__table tbody,
+  .ap__table tr,
+  .ap__table td { display: block; width: 100%; }
+  .ap__table tr {
+    margin-bottom: var(--space-4);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: var(--space-3);
+  }
+  .ap__table td { border: none; padding: var(--space-2) 0; }
+  .ap__actions { text-align: left; }
+}
 </style>

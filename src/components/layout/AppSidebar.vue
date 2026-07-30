@@ -4,9 +4,11 @@
  */
 import { computed } from 'vue'
 import { useAuthStore } from '@/stores/auth.store'
+import { useSidebar } from '@/composables/useSidebar'
 import logoMark from '@/assets/Isotipo-reversed.png'
 
 const authStore = useAuthStore()
+const { isOpen, close } = useSidebar()
 
 const doctorMenu = [
   { name: 'doctor-alerts', label: 'Alertas' },
@@ -38,7 +40,7 @@ const menu = computed(() => {
 </script>
 
 <template>
-  <aside class="sidebar">
+  <aside class="sidebar" :class="{ 'sidebar--open': isOpen }">
     <div class="sidebar__brand">
       <span class="sidebar__mark">
         <img :src="logoMark" alt="" class="sidebar__mark-img" />
@@ -52,6 +54,7 @@ const menu = computed(() => {
         :to="{ name: item.name }"
         class="sidebar__link"
         active-class="sidebar__link--active"
+        @click="close"
       >
         {{ item.label }}
       </router-link>
@@ -131,5 +134,21 @@ const menu = computed(() => {
 .sidebar__link--active {
   background: var(--color-teal);
   color: var(--text-on-brand);
+}
+
+@media (max-width: 880px) {
+  .sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    height: 100vh;
+    z-index: 1001;
+    transform: translateX(-100%);
+    transition: transform 0.2s ease;
+    box-shadow: 4px 0 24px rgba(1, 48, 94, 0.25);
+  }
+
+  .sidebar--open {
+    transform: translateX(0);
+  }
 }
 </style>
