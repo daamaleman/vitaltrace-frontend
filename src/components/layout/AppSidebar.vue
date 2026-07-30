@@ -4,7 +4,7 @@
  */
 import { computed } from 'vue'
 import { useAuthStore } from '@/stores/auth.store'
-import logoMark from '@/assets/Isotipo.png'
+import logoMark from '@/assets/Isotipo-reversed.png'
 
 const authStore = useAuthStore()
 
@@ -81,8 +81,8 @@ const menu = computed(() => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
+  width: 38px;
+  height: 38px;
   flex-shrink: 0;
 }
 
@@ -94,9 +94,10 @@ const menu = computed(() => {
 
 .sidebar__brand-text {
   font-family: var(--font-heading);
-  font-size: var(--fs-section);
+  font-size: var(--fs-subtitle);
   font-weight: 600;
   color: var(--text-on-brand);
+  white-space: nowrap;
 }
 
 .sidebar__brand-text strong {
