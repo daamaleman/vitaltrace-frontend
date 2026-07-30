@@ -50,6 +50,26 @@ export const admissionService = {
     return data
   },
 
+  async availableStaff() {
+    const { data } = await http.get('/admission/staff')
+    return data.data
+  },
+
+  async patientAssignments(patientId) {
+    const { data } = await http.get(`/admission/patients/${patientId}/assignments`)
+    return data.data
+  },
+
+  async createAssignment(patientId, payload) {
+    const { data } = await http.post(`/admission/patients/${patientId}/assignments`, payload)
+    return data.data
+  },
+
+  async finishAssignment(assignmentId, reason = null) {
+    const { data } = await http.post(`/admission/assignments/${assignmentId}/finish`, { reason })
+    return data.data
+  },
+
   async corrections(params = {}) {
     const { data } = await http.get('/correction-requests', { params })
     return data
