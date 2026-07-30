@@ -4,6 +4,7 @@
  */
 import { computed } from 'vue'
 import { useAuthStore } from '@/stores/auth.store'
+import logoMark from '@/assets/Isotipo.png'
 
 const authStore = useAuthStore()
 
@@ -38,7 +39,12 @@ const menu = computed(() => {
 
 <template>
   <aside class="sidebar">
-    <div class="sidebar__brand">Vital<strong>Trace</strong></div>
+    <div class="sidebar__brand">
+      <span class="sidebar__mark">
+        <img :src="logoMark" alt="" class="sidebar__mark-img" />
+      </span>
+      <span class="sidebar__brand-text">Vital<strong>Trace</strong></span>
+    </div>
     <nav class="sidebar__nav" aria-label="Navegación principal">
       <router-link
         v-for="item in menu"
@@ -64,15 +70,39 @@ const menu = computed(() => {
 }
 
 .sidebar__brand {
-  font-family: var(--font-heading);
-  font-size: var(--fs-subtitle);
-  font-weight: 600;
-  color: var(--text-on-brand);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
   padding: 0 var(--space-3);
   margin-bottom: var(--space-6);
 }
 
-.sidebar__brand strong {
+.sidebar__mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: #ffffff;
+  border-radius: var(--radius-sm);
+  padding: 4px;
+  flex-shrink: 0;
+}
+
+.sidebar__mark-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.sidebar__brand-text {
+  font-family: var(--font-heading);
+  font-size: var(--fs-subtitle);
+  font-weight: 600;
+  color: var(--text-on-brand);
+}
+
+.sidebar__brand-text strong {
   color: var(--color-mint);
   font-weight: 700;
 }

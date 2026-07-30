@@ -12,6 +12,7 @@ import { useAuthStore } from '@/stores/auth.store'
 import { useAuth } from '@/composables/useAuth'
 import { mapHttpError } from '@/utils/httpErrors'
 import AppFormField from '@/components/common/AppFormField.vue'
+import logoStacked from '@/assets/Imagotipo V.png'
 
 const authStore = useAuthStore()
 const { landingRoute } = useAuth()
@@ -56,7 +57,7 @@ async function handleSubmit() {
   <div class="login">
     <div class="login__card vt-card">
       <div class="login__brand">
-        <span class="login__logo">Vital<strong>Trace</strong></span>
+        <img :src="logoStacked" alt="VitalTrace" class="login__logo-img" />
         <p class="login__tagline">Seguimiento clínico continuo</p>
       </div>
 
@@ -124,16 +125,11 @@ async function handleSubmit() {
   margin-bottom: var(--space-6);
 }
 
-.login__logo {
-  font-family: var(--font-heading);
-  font-size: var(--fs-section);
-  font-weight: 600;
-  color: var(--color-navy);
-}
-
-.login__logo strong {
-  color: var(--color-teal);
-  font-weight: 700;
+.login__logo-img {
+  height: 72px;
+  width: auto;
+  margin: 0 auto;
+  display: block;
 }
 
 .login__tagline {
