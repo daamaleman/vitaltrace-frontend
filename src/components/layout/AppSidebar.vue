@@ -81,11 +81,8 @@ const menu = computed(() => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  background: #ffffff;
-  border-radius: var(--radius-sm);
-  padding: 4px;
+  width: 44px;
+  height: 44px;
   flex-shrink: 0;
 }
 
@@ -97,7 +94,7 @@ const menu = computed(() => {
 
 .sidebar__brand-text {
   font-family: var(--font-heading);
-  font-size: var(--fs-subtitle);
+  font-size: var(--fs-section);
   font-weight: 600;
   color: var(--text-on-brand);
 }

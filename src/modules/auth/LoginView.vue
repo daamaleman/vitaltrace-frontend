@@ -126,7 +126,7 @@ async function handleSubmit() {
 }
 
 .login__logo-img {
-  height: 72px;
+  height: 108px;
   width: auto;
   margin: 0 auto;
   display: block;
