@@ -55,6 +55,9 @@ const clinicalMap = {
   PENDING: { label: 'Pendiente', color: 'classified', icon: '◐' },
   REVOKED: { label: 'Revocado', color: 'high', icon: '✕' },
   EXPIRED: { label: 'Expirado', color: 'neutral', icon: '⊘' },
+  // Account / activation
+  BLOCKED: { label: 'Bloqueada', color: 'high', icon: '⊘' },
+  USED: { label: 'Usado', color: 'closed', icon: '✓' },
 }
 
 const config = computed(() => {

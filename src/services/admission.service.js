@@ -74,4 +74,34 @@ export const admissionService = {
     const { data } = await http.get('/correction-requests', { params })
     return data
   },
+
+  async accounts() {
+    const { data } = await http.get('/admission/accounts')
+    return data.data
+  },
+
+  async peopleWithoutAccount() {
+    const { data } = await http.get('/admission/accounts/available-people')
+    return data.data
+  },
+
+  async createAccount(payload) {
+    const { data } = await http.post('/admission/accounts', payload)
+    return data.data
+  },
+
+  async resendCode(userId) {
+    const { data } = await http.post(`/admission/accounts/${userId}/resend`)
+    return data
+  },
+
+  async blockAccount(userId) {
+    const { data } = await http.post(`/admission/accounts/${userId}/block`)
+    return data.data
+  },
+
+  async unblockAccount(userId) {
+    const { data } = await http.post(`/admission/accounts/${userId}/unblock`)
+    return data.data
+  },
 }
