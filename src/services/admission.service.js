@@ -10,6 +10,22 @@ export const admissionService = {
     return data
   },
 
+  async patientsWithTeam() {
+    const patients = await this.patients()
+    const list = Array.isArray(patients) ? patients : (patients?.data ?? [])
+    const withTeam = await Promise.all(
+      list.map(async (patient) => {
+        try {
+          const assignments = await this.patientAssignments(patient.id)
+          return { ...patient, assignments: assignments ?? [] }
+        } catch {
+          return { ...patient, assignments: [] }
+        }
+      }),
+    )
+    return withTeam
+  },
+
   async patient(patientId) {
     const { data } = await http.get(`/admission/patients/${patientId}`)
     return data.data
