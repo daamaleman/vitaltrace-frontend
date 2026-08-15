@@ -6,6 +6,7 @@
 import { ref, computed, reactive, onMounted } from 'vue'
 import { admissionService } from '@/services/admission.service'
 import { mapHttpError } from '@/utils/httpErrors'
+import AppButton from '@/components/common/AppButton.vue'
 import AppFormField from '@/components/common/AppFormField.vue'
 import StatusBadge from '@/components/common/StatusBadge.vue'
 
@@ -168,10 +169,10 @@ onMounted(load)
       <p v-if="formError" class="rel__error" role="alert">{{ formError }}</p>
 
       <div class="rel__form-actions">
-        <button type="button" class="vt-btn-secondary" @click="showForm = false; resetForm()">Cancelar</button>
-        <button type="button" class="vt-btn-primary" :disabled="saving" @click="submitRelative">
-          {{ saving ? 'Guardando…' : 'Agregar familiar' }}
-        </button>
+        <AppButton variant="secondary" :disabled="saving" @click="showForm = false; resetForm()">Cancelar</AppButton>
+        <AppButton variant="primary" :loading="saving" loading-label="Guardando…" @click="submitRelative">
+          Agregar familiar
+        </AppButton>
       </div>
     </div>
   </div>

@@ -7,6 +7,7 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { admissionService } from '@/services/admission.service'
 import { mapHttpError } from '@/utils/httpErrors'
+import AppButton from '@/components/common/AppButton.vue'
 import StatusBadge from '@/components/common/StatusBadge.vue'
 
 const props = defineProps({
@@ -163,10 +164,10 @@ onMounted(load)
       <p v-if="formError" class="asg__form-error" role="alert">{{ formError }}</p>
 
       <div class="asg__form-actions">
-        <button type="button" class="vt-btn-secondary" @click="showForm = false; formError = ''">Cancelar</button>
-        <button type="button" class="vt-btn-primary" :disabled="saving" @click="submit">
-          {{ saving ? 'Asignando…' : 'Asignar' }}
-        </button>
+        <AppButton variant="secondary" :disabled="saving" @click="showForm = false; formError = ''">Cancelar</AppButton>
+        <AppButton variant="primary" :loading="saving" loading-label="Asignando…" @click="submit">
+          Asignar
+        </AppButton>
       </div>
     </div>
   </div>
