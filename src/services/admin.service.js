@@ -21,7 +21,7 @@ export const adminService = {
   // Audit logs
   async auditLogs() {
     const { data } = await http.get('/audit-logs')
-    return data
+    return data?.data?.data || data?.data || data || []
   },
 
   // Catalogs
