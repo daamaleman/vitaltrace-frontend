@@ -41,6 +41,6 @@ export const adminService = {
   // Roles
   async roles() {
     const { data } = await http.get('/roles')
-    return data
+    return data?.data?.data || data?.data || data || []
   },
 }

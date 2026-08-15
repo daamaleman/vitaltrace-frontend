@@ -1,147 +1,92 @@
-<template>
-  <div class="space-y-6">
-    <!-- Encabezado -->
-    <div class="flex items-center justify-between">
-      <div>
-        <h1 class="text-2xl font-bold text-gray-900">Roles y Permisos</h1>
-        <p class="text-sm text-gray-600 mt-1">
-          Gestión de roles de usuario y control de acceso al sistema clínico.
-        </p>
-      </div>
-    </div>
-
-    <!-- Estado de Carga -->
-    <div v-if="loading" class="flex justify-center items-center py-12">
-      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600"></div>
-    </div>
-
-    <!-- Lista de Roles -->
-    <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <div
-        v-for="role in roles"
-        :key="role.id || role.name"
-        class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col justify-between hover:shadow-md transition-shadow"
-      >
-        <div>
-          <!-- Badge de Nombre del Rol -->
-          <div class="flex items-center justify-between mb-3">
-            <span
-              class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold tracking-wide uppercase"
-              :class="getRoleBadgeClass(role.name)"
-            >
-              {{ role.name }}
-            </span>
-            <span class="text-xs text-gray-400">
-              ID: #{{ role.id }}
-            </span>
-          </div>
-
-          <!-- Descripción -->
-          <p class="text-sm text-gray-600 mb-4">
-            {{ role.description || getDefaultDescription(role.name) }}
-          </p>
-
-          <!-- Permisos asociados (Si el backend devuelve array de permisos) -->
-          <div v-if="role.permissions && role.permissions.length > 0" class="mt-4 border-t border-gray-100 pt-3">
-            <span class="text-xs font-medium text-gray-500 uppercase tracking-wider block mb-2">
-              Permisos del sistema
-            </span>
-            <div class="flex flex-wrap gap-1.5">
-              <span
-                v-for="(perm, index) in role.permissions"
-                :key="index"
-                class="inline-block bg-gray-100 text-gray-700 text-xs px-2 py-0.5 rounded"
-              >
-                {{ perm.name || perm }}
-              </span>
-            </div>
-          </div>
-          <div v-else class="mt-4 border-t border-gray-100 pt-3">
-            <span class="text-xs text-gray-400 italic">
-              Permisos estándar asignados según perfil.
-            </span>
-          </div>
-        </div>
-
-        <!-- Pie de tarjeta -->
-        <div class="mt-6 pt-3 border-t border-gray-100 flex items-center justify-between">
-          <span class="text-xs font-medium text-teal-700">
-            Rol del Sistema
-          </span>
-          <span class="text-xs text-gray-400">
-            Estado: Activo
-          </span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Estado vacío -->
-    <div
-      v-if="!loading && roles.length === 0"
-      class="bg-white rounded-xl border border-gray-200 p-12 text-center text-gray-500"
-    >
-      No se encontraron roles configurados en el sistema.
-    </div>
-  </div>
-</template>
-
 <script setup>
+/**
+ * Admin panel: system roles.
+ * Read-only list of the roles defined in the system, with their
+ * responsibility described. Permissions are enforced in the backend.
+ */
 import { ref, onMounted } from 'vue'
 import { adminService } from '@/services/admin.service'
+import { mapHttpError } from '@/utils/httpErrors'
+import StatusBadge from '@/components/common/StatusBadge.vue'
+import LoadingSkeleton from '@/components/common/LoadingSkeleton.vue'
+import EmptyState from '@/components/common/EmptyState.vue'
+import ErrorState from '@/components/common/ErrorState.vue'
 
 const roles = ref([])
 const loading = ref(false)
+const error = ref('')
 
-const loadRoles = async () => {
+// Human-readable responsibility per role (frontend copy).
+const roleInfo = {
+  PATIENT: { label: 'Paciente', desc: 'Registra su seguimiento y consulta su información autorizada desde la app móvil.' },
+  RELATIVE: { label: 'Familiar', desc: 'Acompañamiento limitado del paciente según autorización vigente.' },
+  DOCTOR: { label: 'Médico', desc: 'Seguimiento clínico de pacientes asignados: diagnósticos, tratamientos y evoluciones.' },
+  NURSE: { label: 'Enfermero', desc: 'Registro autorizado de signos vitales y observaciones dentro de su alcance.' },
+  ADMISSION: { label: 'Admisión', desc: 'Ingreso de pacientes, cuentas, familiares, asignaciones y correcciones.' },
+  SYSTEM_ADMIN: { label: 'Administrador del sistema', desc: 'Operación técnica, catálogos, auditoría y configuración. Sin acceso clínico.' },
+}
+
+function info(role) {
+  return roleInfo[role.name] ?? { label: role.name, desc: role.description || '—' }
+}
+
+function statusValue(active) {
+  return active ? 'ACTIVE' : 'INACTIVE'
+}
+
+async function load() {
   loading.value = true
+  error.value = ''
   try {
-    const data = await adminService.roles()
-    roles.value = Array.isArray(data) ? data : []
-  } catch (error) {
-    console.error('Error al cargar la lista de roles:', error)
-    roles.value = []
+    roles.value = await adminService.roles()
+  } catch (err) {
+    error.value = mapHttpError(err)
   } finally {
     loading.value = false
   }
 }
 
-// Colores visuales dinámicos según el tipo de rol
-const getRoleBadgeClass = (roleName = '') => {
-  const name = roleName.toUpperCase()
-  if (name.includes('ADMIN')) {
-    return 'bg-purple-100 text-purple-800'
-  }
-  if (name.includes('DOCTOR') || name.includes('MD')) {
-    return 'bg-teal-100 text-teal-800'
-  }
-  if (name.includes('ADMISSION') || name.includes('NURSE')) {
-    return 'bg-blue-100 text-blue-800'
-  }
-  if (name.includes('PATIENT')) {
-    return 'bg-emerald-100 text-emerald-800'
-  }
-  return 'bg-gray-100 text-gray-800'
-}
-
-// Descripciones por defecto en caso de que la tabla roles solo tenga 'name'
-const getDefaultDescription = (roleName = '') => {
-  const name = roleName.toUpperCase()
-  if (name.includes('ADMIN')) {
-    return 'Acceso total al panel de administración, auditoría, usuarios y catálogos.'
-  }
-  if (name.includes('DOCTOR')) {
-    return 'Acceso a expedientes clínicos asignados, evolución, diagnósticos y alertas de signos vitales.'
-  }
-  if (name.includes('ADMISSION')) {
-    return 'Gestión administrativa de admisiones, registro de pacientes y activación de cuentas.'
-  }
-  if (name.includes('PATIENT')) {
-    return 'Acceso al portal del paciente para consulta de historial propio y mediciones.'
-  }
-  return 'Rol de usuario dentro de la plataforma VitalTrace.'
-}
-
-onMounted(() => {
-  loadRoles()
-})
+onMounted(load)
 </script>
+
+<template>
+  <div class="rol">
+    <header class="rol__header">
+      <h1>Roles y permisos</h1>
+      <p class="rol__subtitle">{{ roles.length }} roles definidos en el sistema</p>
+    </header>
+
+    <LoadingSkeleton v-if="loading" :rows="6" />
+    <ErrorState v-else-if="error" :message="error" @retry="load" />
+    <EmptyState v-else-if="roles.length === 0" title="Sin roles" />
+
+    <div v-else class="rol__list">
+      <article v-for="role in roles" :key="role.id" class="vt-card rol__item">
+        <div class="rol__item-head">
+          <div class="rol__names">
+            <span class="rol__label">{{ info(role).label }}</span>
+            <code class="rol__code">{{ role.name }}</code>
+          </div>
+          <StatusBadge :value="statusValue(role.active)" kind="clinical" />
+        </div>
+        <p class="rol__desc">{{ info(role).desc }}</p>
+      </article>
+    </div>
+
+    <p class="rol__note">
+      Los permisos se validan siempre en el backend. Esta vista muestra los roles definidos y su responsabilidad principal.
+    </p>
+  </div>
+</template>
+
+<style scoped>
+.rol__header { margin-bottom: var(--space-5); }
+.rol__subtitle { color: var(--color-dark); opacity: 0.7; font-size: var(--fs-small); margin-top: var(--space-2); }
+.rol__list { display: flex; flex-direction: column; gap: var(--space-3); }
+.rol__item-head { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-4); margin-bottom: var(--space-3); }
+.rol__names { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
+.rol__label { font-weight: 600; color: var(--color-navy); font-size: var(--fs-featured); }
+.rol__code { background: #f3f0e9; padding: 2px 8px; border-radius: 4px; font-size: var(--fs-small); color: var(--color-teal); font-weight: 600; }
+.rol__desc { font-size: var(--fs-small); color: var(--color-dark); opacity: 0.85; line-height: 1.5; }
+.rol__note { margin-top: var(--space-5); font-size: var(--fs-small); color: var(--color-dark); opacity: 0.6; font-style: italic; }
+</style>
