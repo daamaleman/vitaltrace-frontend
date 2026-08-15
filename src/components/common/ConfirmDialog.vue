@@ -4,6 +4,7 @@
  * field so the clinician can annotate the action (recorded in history).
  */
 import { ref, watch } from 'vue'
+import AppButton from './AppButton.vue'
 
 const props = defineProps({
   open: { type: Boolean, default: false },
@@ -46,12 +47,12 @@ function confirm() {
       </div>
 
       <div class="dialog__actions">
-        <button type="button" class="vt-btn-secondary" :disabled="loading" @click="emit('cancel')">
+        <AppButton variant="secondary" :disabled="loading" @click="emit('cancel')">
           Cancelar
-        </button>
-        <button type="button" class="vt-btn-primary" :disabled="loading" @click="confirm">
-          {{ loading ? 'Procesando…' : confirmLabel }}
-        </button>
+        </AppButton>
+        <AppButton variant="primary" :loading="loading" loading-label="Procesando…" @click="confirm">
+          {{ confirmLabel }}
+        </AppButton>
       </div>
     </div>
   </div>
