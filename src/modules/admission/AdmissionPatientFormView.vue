@@ -8,6 +8,7 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { admissionService } from '@/services/admission.service'
 import { mapHttpError } from '@/utils/httpErrors'
+import AppButton from '@/components/common/AppButton.vue'
 import AppFormField from '@/components/common/AppFormField.vue'
 import RelativesSection from './RelativesSection.vue'
 import AssignmentsSection from './AssignmentsSection.vue'
@@ -163,10 +164,10 @@ onMounted(() => {
       <p v-if="formError" class="pf__error" role="alert">{{ formError }}</p>
 
       <div class="pf__actions">
-        <button type="button" class="vt-btn-secondary" @click="router.push({ name: 'admission-patients' })">Cancelar</button>
-        <button type="submit" class="vt-btn-primary" :disabled="saving">
-          {{ saving ? 'Guardando…' : (isEdit ? 'Guardar cambios' : 'Registrar paciente') }}
-        </button>
+        <AppButton variant="secondary" :disabled="saving" @click="router.push({ name: 'admission-patients' })">Cancelar</AppButton>
+        <AppButton variant="primary" type="submit" :loading="saving" loading-label="Guardando…">
+          {{ isEdit ? 'Guardar cambios' : 'Registrar paciente' }}
+        </AppButton>
       </div>
     </form>
 

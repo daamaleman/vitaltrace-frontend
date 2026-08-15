@@ -11,6 +11,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.store'
 import { useAuth } from '@/composables/useAuth'
 import { mapHttpError } from '@/utils/httpErrors'
+import AppButton from '@/components/common/AppButton.vue'
 import AppFormField from '@/components/common/AppFormField.vue'
 import logoStacked from '@/assets/Imagotipo V.png'
 
@@ -105,9 +106,15 @@ async function handleSubmit() {
 
         <p v-if="formError" class="login__error" role="alert">{{ formError }}</p>
 
-        <button type="submit" class="vt-btn-primary login__submit" :disabled="authStore.loading">
-          {{ authStore.loading ? 'Iniciando sesión…' : 'Iniciar sesión' }}
-        </button>
+        <AppButton
+          variant="primary"
+          type="submit"
+          class="login__submit"
+          :loading="authStore.loading"
+          loading-label="Iniciando sesión…"
+        >
+          Iniciar sesión
+        </AppButton>
       </form>
 
       <p class="login__note">Prototipo académico · Datos ficticios</p>
