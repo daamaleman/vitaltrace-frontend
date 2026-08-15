@@ -29,37 +29,20 @@ const http = axios.create({
   },
 })
 
-http.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    const status = error.response?.status ?? null
-    const payload = error.response?.data ?? null
-
-    // Session expired or invalid: clear local session state.
-    if (status === 401) {
-      const authStore = useAuthStore()
-      authStore.clearSession()
-    }
-
-    return Promise.reject({
-      status,
-      message: payload?.message ?? 'Unexpected error.',
-      errors: payload?.errors ?? null,
-      original: error,
-    })
-  },
-)
-
 /**
- * Response interceptor: normalize errors so the UI can react by status.
- * The auth store handles the 401 side effect (session cleanup); here we
- * only pass a predictable error shape downstream.
+ * Single response interceptor: clears the session on 401 and normalizes
+ * errors to a predictable shape for the UI.
  */
 http.interceptors.response.use(
   (response) => response,
   (error) => {
     const status = error.response?.status ?? null
     const payload = error.response?.data ?? null
+
+    if (status === 401) {
+      const authStore = useAuthStore()
+      authStore.clearSession()
+    }
 
     return Promise.reject({
       status,

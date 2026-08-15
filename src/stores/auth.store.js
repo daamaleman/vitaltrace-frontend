@@ -41,6 +41,7 @@ export const useAuthStore = defineStore('auth', {
       this.loading = true
       try {
         this.user = await authService.login(credentials)
+        this.initialized = true
         return this.user
       } finally {
         this.loading = false

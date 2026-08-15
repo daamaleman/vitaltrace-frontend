@@ -2,9 +2,9 @@
 /**
  * Public login for Doctor and Admission (§6.1).
  *
- * The role selector is presentational only: it does not change the real
- * role, which the backend validates. After login, the user is routed to
- * the landing view of their actual role.
+ * The role selector picks which area the user intends to log into. After
+ * a successful login, the real role (from the backend) must match the
+ * selected area; otherwise the session is closed and an error is shown.
  */
 import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -37,9 +37,17 @@ const roleOptions = [
 async function handleSubmit() {
   formError.value = ''
   fieldErrors.value = {}
-
   try {
     await authStore.login({ email: email.value, password: password.value })
+
+    // Validate that the user's real role matches the selected area.
+    if (!authStore.hasRole(selectedRole.value)) {
+      const areaLabel = roleOptions.find((o) => o.value === selectedRole.value)?.label ?? ''
+      await authStore.logout()
+      formError.value = `Este correo no corresponde al área de ${areaLabel}. Verifica el área seleccionada.`
+      return
+    }
+
     router.push(landingRoute())
   } catch (error) {
     if (error.status === 422 && error.errors) {
