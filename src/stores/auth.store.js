@@ -33,14 +33,29 @@ export const useAuthStore = defineStore('auth', {
     /**
      * Authenticate and load the user profile.
      *
-     * The login response already includes the user, so we use it directly
-     * instead of firing a separate /me request, which avoids a race with the
-     * freshly issued session cookie.
+     * The login response already includes the user, but we still confirm
+     * the session with /me before resolving: right after login the session
+     * cookie can briefly lag the backend's session write, so navigating
+     * immediately can hit a stale 401. Retrying /me absorbs that window
+     * instead of letting the UI race it.
      */
     async login(credentials) {
       this.loading = true
       try {
-        this.user = await authService.login(credentials)
+        const user = await authService.login(credentials)
+
+        let confirmed = null
+        for (let attempt = 0; attempt < 3; attempt += 1) {
+          try {
+            confirmed = await authService.me()
+            break
+          } catch (err) {
+            if (attempt === 2) throw err
+            await new Promise((r) => setTimeout(r, 250))
+          }
+        }
+
+        this.user = confirmed ?? user
         this.initialized = true
         return this.user
       } finally {
