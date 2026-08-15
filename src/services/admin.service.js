@@ -27,15 +27,15 @@ export const adminService = {
   // Catalogs
   async specialties() {
     const { data } = await http.get('/specialties')
-    return data
+    return data?.data?.data || data?.data || data || []
   },
   async medications() {
     const { data } = await http.get('/medications')
-    return data
+    return data?.data?.data || data?.data || data || []
   },
   async measurementTypes() {
     const { data } = await http.get('/measurement-types')
-    return data
+    return data?.data?.data || data?.data || data || []
   },
 
   // Roles
