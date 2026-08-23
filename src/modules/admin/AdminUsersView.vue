@@ -8,6 +8,7 @@ import { ref, computed, onMounted } from 'vue'
 import { adminService } from '@/services/admin.service'
 import { mapHttpError } from '@/utils/httpErrors'
 import { formatDateTime } from '@/utils/formatters'
+import AppButton from '@/components/common/AppButton.vue'
 import StatusBadge from '@/components/common/StatusBadge.vue'
 import LoadingSkeleton from '@/components/common/LoadingSkeleton.vue'
 import EmptyState from '@/components/common/EmptyState.vue'
@@ -17,6 +18,7 @@ const users = ref([])
 const loading = ref(false)
 const error = ref('')
 const search = ref('')
+const blockingId = ref(null)
 
 const filtered = computed(() => {
   const term = search.value.trim().toLowerCase()
@@ -51,6 +53,8 @@ async function load() {
 }
 
 async function toggleBlock(user) {
+  if (blockingId.value !== null) return
+  blockingId.value = user.id
   try {
     if (user.status === 'BLOCKED') {
       await adminService.unblockUser(user.id)
@@ -60,6 +64,8 @@ async function toggleBlock(user) {
     await load()
   } catch (err) {
     error.value = mapHttpError(err)
+  } finally {
+    blockingId.value = null
   }
 }
 
@@ -101,9 +107,14 @@ onMounted(load)
             <td><StatusBadge :value="u.status" kind="clinical" /></td>
             <td class="au__meta">{{ u.last_access_at ? formatDateTime(u.last_access_at) : '—' }}</td>
             <td class="au__actions">
-              <button type="button" class="au__btn" @click="toggleBlock(u)">
+              <AppButton
+                variant="secondary"
+                class="au__btn"
+                :loading="blockingId === u.id"
+                @click="toggleBlock(u)"
+              >
                 {{ u.status === 'BLOCKED' ? 'Desbloquear' : 'Bloquear' }}
-              </button>
+              </AppButton>
             </td>
           </tr>
         </tbody>
