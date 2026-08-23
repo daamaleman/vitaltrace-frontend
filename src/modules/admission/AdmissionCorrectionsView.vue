@@ -8,11 +8,14 @@ import { ref, computed, onMounted } from 'vue'
 import { admissionService } from '@/services/admission.service'
 import { mapHttpError } from '@/utils/httpErrors'
 import { formatDateTime } from '@/utils/formatters'
+import { useToastStore } from '@/stores/toast.store'
 import StatusBadge from '@/components/common/StatusBadge.vue'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 import LoadingSkeleton from '@/components/common/LoadingSkeleton.vue'
 import EmptyState from '@/components/common/EmptyState.vue'
 import ErrorState from '@/components/common/ErrorState.vue'
+
+const toast = useToastStore()
 
 const corrections = ref([])
 const loading = ref(false)
@@ -67,14 +70,17 @@ async function confirmAction(note) {
   try {
     if (dialog.value.action === 'approve') {
       await admissionService.approveCorrection(dialog.value.id, note)
+      toast.success('Corrección aprobada y aplicada.')
     } else {
       // Rejection requires a note.
       await admissionService.rejectCorrection(dialog.value.id, note || 'Rechazada.')
+      toast.success('Corrección rechazada.')
     }
     dialog.value.open = false
     await load()
   } catch (err) {
     error.value = mapHttpError(err)
+    toast.error('No se pudo completar la acción.')
   } finally {
     actionLoading.value = false
   }
