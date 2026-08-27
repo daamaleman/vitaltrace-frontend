@@ -13,12 +13,14 @@ import StatusBadge from '@/components/common/StatusBadge.vue'
 import LoadingSkeleton from '@/components/common/LoadingSkeleton.vue'
 import EmptyState from '@/components/common/EmptyState.vue'
 import ErrorState from '@/components/common/ErrorState.vue'
+import UserRolesDialog from './UserRolesDialog.vue'
 
 const users = ref([])
 const loading = ref(false)
 const error = ref('')
 const search = ref('')
 const blockingId = ref(null)
+const rolesDialog = ref({ open: false, user: null })
 
 const filtered = computed(() => {
   const term = search.value.trim().toLowerCase()
@@ -69,6 +71,16 @@ async function toggleBlock(user) {
   }
 }
 
+function openRoles(user) {
+  rolesDialog.value = { open: true, user }
+}
+function closeRoles() {
+  rolesDialog.value.open = false
+}
+function onRolesChanged() {
+  load()
+}
+
 onMounted(load)
 </script>
 
@@ -107,6 +119,7 @@ onMounted(load)
             <td><StatusBadge :value="u.status" kind="clinical" /></td>
             <td class="au__meta">{{ u.last_access_at ? formatDateTime(u.last_access_at) : '—' }}</td>
             <td class="au__actions">
+              <AppButton variant="secondary" @click="openRoles(u)">Roles</AppButton>
               <AppButton
                 variant="secondary"
                 class="au__btn"
@@ -120,6 +133,13 @@ onMounted(load)
         </tbody>
       </table>
     </div>
+
+    <UserRolesDialog
+      :open="rolesDialog.open"
+      :user="rolesDialog.user"
+      @close="closeRoles"
+      @changed="onRolesChanged"
+    />
   </div>
 </template>
 
@@ -142,7 +162,7 @@ onMounted(load)
 .au__email { font-size: var(--fs-small); color: var(--color-dark); }
 .au__role { font-size: var(--fs-small); font-weight: 600; color: var(--color-teal); }
 .au__meta { font-size: var(--fs-small); color: var(--color-dark); opacity: 0.7; }
-.au__actions { text-align: right; }
+.au__actions { display: flex; gap: var(--space-2); justify-content: flex-end; flex-wrap: wrap; }
 .au__btn {
   font-family: var(--font-body); font-size: var(--fs-small); font-weight: 600;
   color: #b3261e; background: transparent; border: 1px solid #b3261e;
@@ -162,6 +182,6 @@ onMounted(load)
     padding: var(--space-3);
   }
   .au__table td { border: none; padding: var(--space-2) 0; }
-  .au__actions { text-align: left; }
+  .au__actions { justify-content: flex-start; }
 }
 </style>

@@ -18,6 +18,21 @@ export const adminService = {
     return data.data
   },
 
+  async userRoles(userId) {
+    const { data } = await http.get(`/admin/users/${userId}/roles`)
+    return data?.data?.data || data?.data || data || []
+  },
+
+  async assignRole(userId, roleId) {
+    const { data } = await http.post(`/admin/users/${userId}/roles`, { role_id: roleId })
+    return data
+  },
+
+  async revokeRole(userId, roleId) {
+    const { data } = await http.delete(`/admin/users/${userId}/roles/${roleId}`)
+    return data
+  },
+
   // Audit logs
   async auditLogs() {
     const { data } = await http.get('/audit-logs')
