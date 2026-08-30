@@ -30,6 +30,7 @@ const form = reactive({
   identity_document: '',
   phone: '',
   relationship: '',
+  email: '',
 })
 
 const genderOptions = [
@@ -66,7 +67,7 @@ async function load() {
 function resetForm() {
   Object.assign(form, {
     first_name: '', first_last_name: '', date_of_birth: '',
-    gender: 'UNSPECIFIED', identity_document: '', phone: '', relationship: '',
+    gender: 'UNSPECIFIED', identity_document: '', phone: '', relationship: '', email: '',
   })
   fieldErrors.value = {}
   formError.value = ''
@@ -164,6 +165,7 @@ onMounted(load)
         </div>
         <AppFormField v-model="form.relationship" label="Parentesco" required :error="fieldErrors.relationship" help="p. ej. Madre, Hijo, Cónyuge" />
         <AppFormField v-model="form.phone" label="Teléfono" :error="fieldErrors.phone" />
+        <AppFormField v-model="form.email" label="Correo electrónico" type="email" required :error="fieldErrors.email" help="Se enviará un código de activación a este correo" />
       </div>
 
       <p v-if="formError" class="rel__error" role="alert">{{ formError }}</p>
