@@ -6,11 +6,14 @@
  * measurement trend, diagnoses, clinical evolutions and treatments.
  * Clinical history is preserved, never overwritten (RN-09).
  */
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, reactive } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { doctorService } from '@/services/doctor.service'
 import { mapHttpError } from '@/utils/httpErrors'
 import { formatDateTime, ageFromDate } from '@/utils/formatters'
+import { useToastStore } from '@/stores/toast.store'
+import AppButton from '@/components/common/AppButton.vue'
+import AppFormField from '@/components/common/AppFormField.vue'
 import StatusBadge from '@/components/common/StatusBadge.vue'
 import LoadingSkeleton from '@/components/common/LoadingSkeleton.vue'
 import EmptyState from '@/components/common/EmptyState.vue'
@@ -43,6 +46,49 @@ const measurements = computed(() => summary.value?.measurements ?? [])
 const diagnoses = computed(() => summary.value?.diagnoses ?? [])
 const evolutions = computed(() => summary.value?.evolutions ?? [])
 const treatments = computed(() => summary.value?.treatments ?? [])
+
+const toast = useToastStore()
+
+const evolutionStatuses = [
+  { value: 'STABLE', label: 'Estable' },
+  { value: 'OBSERVATION', label: 'Observación' },
+  { value: 'DELICATE', label: 'Delicado' },
+  { value: 'CRITICAL', label: 'Crítico' },
+  { value: 'RECOVERY', label: 'Recuperación' },
+]
+
+const showEvolutionForm = ref(false)
+const savingEvolution = ref(false)
+const evolutionError = ref('')
+const evolutionForm = reactive({
+  clinical_summary: '',
+  status: 'STABLE',
+  recorded_at: '',
+})
+
+function resetEvolutionForm() {
+  evolutionForm.clinical_summary = ''
+  evolutionForm.status = 'STABLE'
+  evolutionForm.recorded_at = ''
+  evolutionError.value = ''
+}
+
+async function submitEvolution() {
+  savingEvolution.value = true
+  evolutionError.value = ''
+  try {
+    await doctorService.addEvolution(route.params.id, { ...evolutionForm })
+    showEvolutionForm.value = false
+    resetEvolutionForm()
+    await loadSummary()
+    toast.success('Evolución registrada correctamente.')
+  } catch (err) {
+    evolutionError.value = mapHttpError(err)
+    toast.error('No se pudo registrar la evolución.')
+  } finally {
+    savingEvolution.value = false
+  }
+}
 
 // Simple trend: chronological measurements for a mini sparkline.
 const trend = computed(() => {
@@ -164,8 +210,51 @@ onMounted(loadSummary)
 
       <!-- Evolutions -->
       <section v-show="activeTab === 'evolutions'" class="vt-card">
-        <EmptyState v-if="evolutions.length === 0" title="No hay evoluciones registradas" />
-        <ol v-else class="patient__timeline">
+        <div class="patient__section-head">
+          <h3 class="patient__section-title">Evoluciones</h3>
+          <AppButton v-if="!showEvolutionForm" variant="primary" @click="showEvolutionForm = true">
+            Registrar evolución
+          </AppButton>
+        </div>
+
+        <div v-if="showEvolutionForm" class="patient__form">
+          <div class="patient__field">
+            <label class="patient__label" for="evo-summary">
+              Resumen clínico <span aria-hidden="true" class="patient__required">*</span>
+            </label>
+            <textarea
+              id="evo-summary"
+              v-model="evolutionForm.clinical_summary"
+              class="patient__textarea"
+              rows="4"
+              required
+            ></textarea>
+          </div>
+          <div class="patient__field">
+            <label class="patient__label" for="evo-status">Estado clínico</label>
+            <select id="evo-status" v-model="evolutionForm.status" class="patient__select">
+              <option v-for="s in evolutionStatuses" :key="s.value" :value="s.value">{{ s.label }}</option>
+            </select>
+          </div>
+          <AppFormField
+            v-model="evolutionForm.recorded_at"
+            label="Fecha y hora"
+            type="datetime-local"
+            required
+          />
+          <p v-if="evolutionError" class="patient__error" role="alert">{{ evolutionError }}</p>
+          <div class="patient__form-actions">
+            <AppButton variant="secondary" :disabled="savingEvolution" @click="showEvolutionForm = false; resetEvolutionForm()">
+              Cancelar
+            </AppButton>
+            <AppButton variant="primary" :loading="savingEvolution" loading-label="Guardando…" @click="submitEvolution">
+              Guardar evolución
+            </AppButton>
+          </div>
+        </div>
+
+        <EmptyState v-if="evolutions.length === 0 && !showEvolutionForm" title="No hay evoluciones registradas" />
+        <ol v-else-if="evolutions.length" class="patient__timeline">
           <li v-for="e in evolutions" :key="e.id" class="patient__timeline-item">
             <div class="patient__item-head">
               <StatusBadge :value="e.status" kind="clinical" />
@@ -247,6 +336,22 @@ onMounted(loadSummary)
 .patient__timeline { list-style: none; display: flex; flex-direction: column; gap: var(--space-5); }
 .patient__timeline-item { padding-left: var(--space-4); border-left: 3px solid var(--color-mint); }
 .patient__summary-text { margin-top: var(--space-2); color: var(--color-dark); }
+
+.patient__section-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-4); gap: var(--space-3); flex-wrap: wrap; }
+.patient__form { margin-bottom: var(--space-5); padding: var(--space-4); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); background: #fafbfc; }
+.patient__field { display: flex; flex-direction: column; gap: var(--space-2); margin-bottom: var(--space-4); }
+.patient__label { font-size: var(--fs-small); font-weight: 600; }
+.patient__required { color: var(--action-secondary); }
+.patient__select,
+.patient__textarea {
+  font-family: var(--font-body); font-size: var(--fs-body);
+  border: 1px solid var(--border-subtle); border-radius: var(--radius-md);
+  padding: var(--space-3); background: var(--bg-card); color: var(--text-primary);
+}
+.patient__select { min-height: var(--touch-min); padding: 0 var(--space-3); }
+.patient__textarea { resize: vertical; }
+.patient__error { color: #b3261e; font-size: var(--fs-small); margin-bottom: var(--space-3); }
+.patient__form-actions { display: flex; justify-content: flex-end; gap: var(--space-3); }
 
 @media (max-width: 720px) {
   .patient__table thead { display: none; }

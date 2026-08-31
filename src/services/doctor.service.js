@@ -59,4 +59,9 @@ export const doctorService = {
     const { data } = await http.get('/diagnoses', { params })
     return data
   },
+
+  async addEvolution(patientId, payload) {
+    const { data } = await http.post(`/clinical/patients/${patientId}/evolutions`, payload)
+    return data.data
+  },
 }
