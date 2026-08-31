@@ -32,6 +32,7 @@ const tabs = [
   { value: 'diagnoses', label: 'Diagnósticos' },
   { value: 'evolutions', label: 'Evoluciones' },
   { value: 'treatments', label: 'Tratamientos' },
+  { value: 'ranges', label: 'Rangos' },
 ]
 
 const patient = computed(() => summary.value?.patient ?? null)
@@ -88,6 +89,86 @@ async function submitEvolution() {
   } finally {
     savingEvolution.value = false
   }
+}
+
+// Catálogos (hardcoded para la demo)
+const measurementTypes = [
+  { value: 1, label: 'Presión sistólica' },
+  { value: 2, label: 'Glucosa en sangre' },
+  { value: 3, label: 'Saturación de oxígeno' },
+]
+const medicationCatalog = [
+  { value: 1, label: 'Losartán' },
+  { value: 2, label: 'Metformina' },
+  { value: 3, label: 'Amlodipino' },
+  { value: 4, label: 'Insulina glargina' },
+  { value: 5, label: 'Atorvastatina' },
+]
+const diagnosisStatuses = [
+  { value: 'ACTIVE', label: 'Activo' },
+  { value: 'RESOLVED', label: 'Resuelto' },
+  { value: 'UNDER_REVIEW', label: 'En revisión' },
+]
+const severities = [
+  { value: 'INFORMATIONAL', label: 'Informativa' },
+  { value: 'MODERATE', label: 'Moderada' },
+  { value: 'HIGH', label: 'Alta' },
+  { value: 'CRITICAL', label: 'Crítica' },
+]
+const treatmentStatuses = [
+  { value: 'ACTIVE', label: 'Activo' },
+  { value: 'FINISHED', label: 'Finalizado' },
+  { value: 'SUSPENDED', label: 'Suspendido' },
+]
+
+// --- Diagnóstico ---
+const showDiagnosisForm = ref(false)
+const savingDiagnosis = ref(false)
+const diagnosisError = ref('')
+const diagnosisForm = reactive({ cie_code: '', description: '', diagnosis_date: '', status: 'ACTIVE' })
+function resetDiagnosisForm() { Object.assign(diagnosisForm, { cie_code: '', description: '', diagnosis_date: '', status: 'ACTIVE' }); diagnosisError.value = '' }
+async function submitDiagnosis() {
+  savingDiagnosis.value = true; diagnosisError.value = ''
+  try {
+    await doctorService.addDiagnosis(route.params.id, { ...diagnosisForm })
+    showDiagnosisForm.value = false; resetDiagnosisForm(); await loadSummary()
+    toast.success('Diagnóstico registrado correctamente.')
+  } catch (err) { diagnosisError.value = mapHttpError(err); toast.error('No se pudo registrar el diagnóstico.') }
+  finally { savingDiagnosis.value = false }
+}
+
+// --- Rango clínico ---
+const showRangeForm = ref(false)
+const savingRange = ref(false)
+const rangeError = ref('')
+const rangeForm = reactive({ measurement_type_id: 1, min_value: '', max_value: '', severity: 'MODERATE', start_date: '' })
+function resetRangeForm() { Object.assign(rangeForm, { measurement_type_id: 1, min_value: '', max_value: '', severity: 'MODERATE', start_date: '' }); rangeError.value = '' }
+async function submitRange() {
+  savingRange.value = true; rangeError.value = ''
+  try {
+    await doctorService.addRange(route.params.id, { ...rangeForm })
+    showRangeForm.value = false; resetRangeForm(); await loadSummary()
+    toast.success('Rango clínico registrado correctamente.')
+  } catch (err) { rangeError.value = mapHttpError(err); toast.error('No se pudo registrar el rango.') }
+  finally { savingRange.value = false }
+}
+
+// --- Tratamiento ---
+const showTreatmentForm = ref(false)
+const savingTreatment = ref(false)
+const treatmentError = ref('')
+const treatmentForm = reactive({ indications: '', start_date: '', status: 'ACTIVE', medications: [] })
+function addMedRow() { treatmentForm.medications.push({ medication_id: 1, dose: '', route: 'Oral', frequency: '' }) }
+function removeMedRow(i) { treatmentForm.medications.splice(i, 1) }
+function resetTreatmentForm() { Object.assign(treatmentForm, { indications: '', start_date: '', status: 'ACTIVE', medications: [] }); treatmentError.value = '' }
+async function submitTreatment() {
+  savingTreatment.value = true; treatmentError.value = ''
+  try {
+    await doctorService.addTreatment(route.params.id, { ...treatmentForm })
+    showTreatmentForm.value = false; resetTreatmentForm(); await loadSummary()
+    toast.success('Tratamiento registrado correctamente.')
+  } catch (err) { treatmentError.value = mapHttpError(err); toast.error('No se pudo registrar el tratamiento.') }
+  finally { savingTreatment.value = false }
 }
 
 // Simple trend: chronological measurements for a mini sparkline.
@@ -196,8 +277,33 @@ onMounted(loadSummary)
 
       <!-- Diagnoses -->
       <section v-show="activeTab === 'diagnoses'" class="vt-card">
-        <EmptyState v-if="diagnoses.length === 0" title="No hay diagnósticos" />
-        <ul v-else class="patient__list">
+        <div class="patient__section-head">
+          <h3 class="patient__section-title">Diagnósticos</h3>
+          <AppButton v-if="!showDiagnosisForm" variant="primary" @click="showDiagnosisForm = true">Registrar diagnóstico</AppButton>
+        </div>
+        <div v-if="showDiagnosisForm" class="patient__form">
+          <AppFormField v-model="diagnosisForm.cie_code" label="Código CIE (opcional)" />
+          <div class="patient__field">
+            <label class="patient__label" for="diag-desc">
+              Descripción <span aria-hidden="true" class="patient__required">*</span>
+            </label>
+            <textarea id="diag-desc" v-model="diagnosisForm.description" class="patient__textarea" rows="3" required></textarea>
+          </div>
+          <AppFormField v-model="diagnosisForm.diagnosis_date" label="Fecha de diagnóstico" type="date" required />
+          <div class="patient__field">
+            <label class="patient__label" for="diag-status">Estado</label>
+            <select id="diag-status" v-model="diagnosisForm.status" class="patient__select">
+              <option v-for="s in diagnosisStatuses" :key="s.value" :value="s.value">{{ s.label }}</option>
+            </select>
+          </div>
+          <p v-if="diagnosisError" class="patient__error" role="alert">{{ diagnosisError }}</p>
+          <div class="patient__form-actions">
+            <AppButton variant="secondary" :disabled="savingDiagnosis" @click="showDiagnosisForm = false; resetDiagnosisForm()">Cancelar</AppButton>
+            <AppButton variant="primary" :loading="savingDiagnosis" loading-label="Guardando…" @click="submitDiagnosis">Guardar</AppButton>
+          </div>
+        </div>
+        <EmptyState v-if="diagnoses.length === 0 && !showDiagnosisForm" title="No hay diagnósticos" />
+        <ul v-else-if="diagnoses.length" class="patient__list">
           <li v-for="d in diagnoses" :key="d.id" class="patient__item">
             <div class="patient__item-head">
               <span class="patient__item-title">{{ d.cie_code }} · {{ d.description }}</span>
@@ -267,8 +373,47 @@ onMounted(loadSummary)
 
       <!-- Treatments -->
       <section v-show="activeTab === 'treatments'" class="vt-card">
-        <EmptyState v-if="treatments.length === 0" title="No hay tratamientos" />
-        <ul v-else class="patient__list">
+        <div class="patient__section-head">
+          <h3 class="patient__section-title">Tratamientos</h3>
+          <AppButton v-if="!showTreatmentForm" variant="primary" @click="showTreatmentForm = true">Registrar tratamiento</AppButton>
+        </div>
+        <div v-if="showTreatmentForm" class="patient__form">
+          <div class="patient__field">
+            <label class="patient__label" for="treat-indications">
+              Indicaciones <span aria-hidden="true" class="patient__required">*</span>
+            </label>
+            <textarea id="treat-indications" v-model="treatmentForm.indications" class="patient__textarea" rows="3" required></textarea>
+          </div>
+          <AppFormField v-model="treatmentForm.start_date" label="Fecha de inicio" type="date" required />
+          <div class="patient__field">
+            <label class="patient__label" for="treat-status">Estado</label>
+            <select id="treat-status" v-model="treatmentForm.status" class="patient__select">
+              <option v-for="s in treatmentStatuses" :key="s.value" :value="s.value">{{ s.label }}</option>
+            </select>
+          </div>
+          <div class="patient__meds">
+            <div class="patient__meds-head">
+              <span class="patient__label">Medicamentos</span>
+              <button type="button" class="patient__add-med" @click="addMedRow">+ Agregar</button>
+            </div>
+            <div v-for="(med, i) in treatmentForm.medications" :key="i" class="patient__med-row">
+              <select v-model="med.medication_id" class="patient__select">
+                <option v-for="m in medicationCatalog" :key="m.value" :value="m.value">{{ m.label }}</option>
+              </select>
+              <input v-model="med.dose" placeholder="Dosis" class="patient__med-input" />
+              <input v-model="med.route" placeholder="Vía" class="patient__med-input" />
+              <input v-model="med.frequency" placeholder="Frecuencia" class="patient__med-input" />
+              <button type="button" class="patient__remove-med" @click="removeMedRow(i)">×</button>
+            </div>
+          </div>
+          <p v-if="treatmentError" class="patient__error" role="alert">{{ treatmentError }}</p>
+          <div class="patient__form-actions">
+            <AppButton variant="secondary" :disabled="savingTreatment" @click="showTreatmentForm = false; resetTreatmentForm()">Cancelar</AppButton>
+            <AppButton variant="primary" :loading="savingTreatment" loading-label="Guardando…" @click="submitTreatment">Guardar</AppButton>
+          </div>
+        </div>
+        <EmptyState v-if="treatments.length === 0 && !showTreatmentForm" title="No hay tratamientos" />
+        <ul v-else-if="treatments.length" class="patient__list">
           <li v-for="t in treatments" :key="t.id" class="patient__item">
             <div class="patient__item-head">
               <span class="patient__item-title">{{ t.indications }}</span>
@@ -280,6 +425,37 @@ onMounted(loadSummary)
             </div>
           </li>
         </ul>
+      </section>
+
+      <!-- Ranges -->
+      <section v-show="activeTab === 'ranges'" class="vt-card">
+        <div class="patient__section-head">
+          <h3 class="patient__section-title">Rangos clínicos</h3>
+          <AppButton v-if="!showRangeForm" variant="primary" @click="showRangeForm = true">Definir rango</AppButton>
+        </div>
+        <div v-if="showRangeForm" class="patient__form">
+          <div class="patient__field">
+            <label class="patient__label" for="range-type">Tipo de medición</label>
+            <select id="range-type" v-model="rangeForm.measurement_type_id" class="patient__select">
+              <option v-for="t in measurementTypes" :key="t.value" :value="t.value">{{ t.label }}</option>
+            </select>
+          </div>
+          <AppFormField v-model="rangeForm.min_value" label="Valor mínimo" type="number" />
+          <AppFormField v-model="rangeForm.max_value" label="Valor máximo" type="number" />
+          <div class="patient__field">
+            <label class="patient__label" for="range-sev">Severidad</label>
+            <select id="range-sev" v-model="rangeForm.severity" class="patient__select">
+              <option v-for="s in severities" :key="s.value" :value="s.value">{{ s.label }}</option>
+            </select>
+          </div>
+          <AppFormField v-model="rangeForm.start_date" label="Fecha de inicio" type="date" required />
+          <p v-if="rangeError" class="patient__error" role="alert">{{ rangeError }}</p>
+          <div class="patient__form-actions">
+            <AppButton variant="secondary" :disabled="savingRange" @click="showRangeForm = false; resetRangeForm()">Cancelar</AppButton>
+            <AppButton variant="primary" :loading="savingRange" loading-label="Guardando…" @click="submitRange">Guardar</AppButton>
+          </div>
+        </div>
+        <EmptyState v-if="!showRangeForm" title="Define rangos para generar alertas automáticas" />
       </section>
     </template>
   </div>
@@ -353,6 +529,13 @@ onMounted(loadSummary)
 .patient__error { color: #b3261e; font-size: var(--fs-small); margin-bottom: var(--space-3); }
 .patient__form-actions { display: flex; justify-content: flex-end; gap: var(--space-3); }
 
+.patient__meds { margin-bottom: var(--space-4); }
+.patient__meds-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-3); }
+.patient__add-med { background: none; border: 1px solid var(--color-teal); color: var(--color-teal); border-radius: var(--radius-md); padding: 4px 10px; font-weight: 600; cursor: pointer; font-size: var(--fs-small); }
+.patient__med-row { display: flex; gap: var(--space-2); margin-bottom: var(--space-2); align-items: center; }
+.patient__med-input { flex: 1; min-width: 0; font-family: var(--font-body); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); min-height: 38px; padding: 0 var(--space-2); }
+.patient__remove-med { background: none; border: none; color: #b3261e; font-size: 20px; line-height: 1; cursor: pointer; padding: 0 var(--space-2); flex-shrink: 0; }
+
 @media (max-width: 720px) {
   .patient__table thead { display: none; }
   .patient__table,
@@ -366,5 +549,8 @@ onMounted(loadSummary)
     padding: var(--space-3);
   }
   .patient__table td { border: none; padding: var(--space-1) 0; }
+  .patient__med-row { flex-wrap: wrap; }
+  .patient__med-row .patient__select,
+  .patient__med-input { flex: 1 1 100%; }
 }
 </style>

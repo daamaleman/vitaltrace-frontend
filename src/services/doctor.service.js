@@ -64,4 +64,17 @@ export const doctorService = {
     const { data } = await http.post(`/clinical/patients/${patientId}/evolutions`, payload)
     return data.data
   },
+
+  async addDiagnosis(patientId, payload) {
+    const { data } = await http.post(`/clinical/patients/${patientId}/diagnoses`, payload)
+    return data.data
+  },
+  async addRange(patientId, payload) {
+    const { data } = await http.post(`/clinical/patients/${patientId}/ranges`, payload)
+    return data.data
+  },
+  async addTreatment(patientId, payload) {
+    const { data } = await http.post(`/clinical/patients/${patientId}/treatments`, payload)
+    return data.data
+  },
 }
