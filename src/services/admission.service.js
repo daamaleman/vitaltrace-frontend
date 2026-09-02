@@ -130,4 +130,21 @@ export const admissionService = {
     const { data } = await http.post(`/admission/accounts/${userId}/unblock`)
     return data.data
   },
+
+  async appointments(params = {}) {
+    const { data } = await http.get('/admission/appointments', { params })
+    return data.data
+  },
+  async createAppointment(payload) {
+    const { data } = await http.post('/admission/appointments', payload)
+    return data.data
+  },
+  async rescheduleAppointment(appointmentId, payload) {
+    const { data } = await http.put(`/admission/appointments/${appointmentId}`, payload)
+    return data.data
+  },
+  async setAppointmentStatus(appointmentId, status) {
+    const { data } = await http.post(`/admission/appointments/${appointmentId}/status`, { status })
+    return data.data
+  },
 }

@@ -33,6 +33,7 @@ const tabs = [
   { value: 'evolutions', label: 'Evoluciones' },
   { value: 'treatments', label: 'Tratamientos' },
   { value: 'ranges', label: 'Rangos' },
+  { value: 'appointments', label: 'Citas' },
 ]
 
 const patient = computed(() => summary.value?.patient ?? null)
@@ -171,6 +172,73 @@ async function submitTreatment() {
   finally { savingTreatment.value = false }
 }
 
+// --- Citas ---
+const appointmentStatuses = [
+  { value: 'SCHEDULED', label: 'Programada' },
+  { value: 'CONFIRMED', label: 'Confirmada' },
+  { value: 'ATTENDED', label: 'Atendida' },
+  { value: 'CANCELLED', label: 'Cancelada' },
+  { value: 'NO_SHOW', label: 'No asistió' },
+]
+
+// Not part of patientSummary(); loaded separately via patientAppointments().
+const appointments = ref([])
+const loadingAppointments = ref(false)
+const appointmentsListError = ref('')
+
+const showAppointmentForm = ref(false)
+const savingAppointment = ref(false)
+const appointmentError = ref('')
+const appointmentForm = reactive({ scheduled_at: '', duration_minutes: 30, reason: '' })
+const updatingApptId = ref(null)
+
+async function loadAppointments() {
+  loadingAppointments.value = true
+  appointmentsListError.value = ''
+  try {
+    appointments.value = await doctorService.patientAppointments(route.params.id)
+  } catch (err) {
+    appointmentsListError.value = mapHttpError(err)
+  } finally {
+    loadingAppointments.value = false
+  }
+}
+
+function resetAppointmentForm() {
+  Object.assign(appointmentForm, { scheduled_at: '', duration_minutes: 30, reason: '' })
+  appointmentError.value = ''
+}
+
+async function submitAppointment() {
+  savingAppointment.value = true
+  appointmentError.value = ''
+  try {
+    await doctorService.addAppointment(route.params.id, { ...appointmentForm })
+    showAppointmentForm.value = false
+    resetAppointmentForm()
+    await loadAppointments()
+    toast.success('Cita agendada correctamente.')
+  } catch (err) {
+    appointmentError.value = mapHttpError(err)
+    toast.error('No se pudo agendar la cita.')
+  } finally {
+    savingAppointment.value = false
+  }
+}
+
+async function changeApptStatus(appt, status) {
+  updatingApptId.value = appt.id
+  try {
+    await doctorService.setAppointmentStatus(appt.id, status)
+    await loadAppointments()
+    toast.success('Estado de la cita actualizado.')
+  } catch (err) {
+    toast.error('No se pudo actualizar la cita.')
+  } finally {
+    updatingApptId.value = null
+  }
+}
+
 // Simple trend: chronological measurements for a mini sparkline.
 const trend = computed(() => {
   const points = [...measurements.value]
@@ -205,7 +273,10 @@ async function loadSummary() {
   }
 }
 
-onMounted(loadSummary)
+onMounted(() => {
+  loadSummary()
+  loadAppointments()
+})
 </script>
 
 <template>
@@ -457,6 +528,47 @@ onMounted(loadSummary)
         </div>
         <EmptyState v-if="!showRangeForm" title="Define rangos para generar alertas automáticas" />
       </section>
+
+      <!-- Appointments -->
+      <section v-show="activeTab === 'appointments'" class="vt-card">
+        <div class="patient__section-head">
+          <h3 class="patient__section-title">Citas</h3>
+          <AppButton v-if="!showAppointmentForm" variant="primary" @click="showAppointmentForm = true">Agendar cita</AppButton>
+        </div>
+        <div v-if="showAppointmentForm" class="patient__form">
+          <AppFormField v-model="appointmentForm.scheduled_at" label="Fecha y hora" type="datetime-local" required />
+          <AppFormField v-model="appointmentForm.duration_minutes" label="Duración (minutos)" type="number" />
+          <AppFormField v-model="appointmentForm.reason" label="Motivo" required />
+          <p v-if="appointmentError" class="patient__error" role="alert">{{ appointmentError }}</p>
+          <div class="patient__form-actions">
+            <AppButton variant="secondary" :disabled="savingAppointment" @click="showAppointmentForm = false; resetAppointmentForm()">Cancelar</AppButton>
+            <AppButton variant="primary" :loading="savingAppointment" loading-label="Guardando…" @click="submitAppointment">Guardar</AppButton>
+          </div>
+        </div>
+        <LoadingSkeleton v-if="loadingAppointments" :rows="3" />
+        <ErrorState v-else-if="appointmentsListError" :message="appointmentsListError" @retry="loadAppointments" />
+        <EmptyState v-else-if="appointments.length === 0 && !showAppointmentForm" title="No hay citas registradas" />
+        <ul v-else-if="appointments.length" class="patient__list">
+          <li v-for="a in appointments" :key="a.id" class="patient__item">
+            <div class="patient__item-head">
+              <span class="patient__item-title">{{ a.reason }}</span>
+              <StatusBadge :value="a.status" kind="clinical" />
+            </div>
+            <div class="patient__meta">{{ formatDateTime(a.scheduled_at) }} · {{ a.duration_minutes }} min</div>
+            <div class="patient__appt-actions">
+              <label class="patient__appt-label">Cambiar estado:</label>
+              <select
+                class="patient__select patient__select--sm"
+                :value="a.status"
+                :disabled="updatingApptId === a.id"
+                @change="changeApptStatus(a, $event.target.value)"
+              >
+                <option v-for="s in appointmentStatuses" :key="s.value" :value="s.value">{{ s.label }}</option>
+              </select>
+            </div>
+          </li>
+        </ul>
+      </section>
     </template>
   </div>
 </template>
@@ -535,6 +647,10 @@ onMounted(loadSummary)
 .patient__med-row { display: flex; gap: var(--space-2); margin-bottom: var(--space-2); align-items: center; }
 .patient__med-input { flex: 1; min-width: 0; font-family: var(--font-body); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); min-height: 38px; padding: 0 var(--space-2); }
 .patient__remove-med { background: none; border: none; color: #b3261e; font-size: 20px; line-height: 1; cursor: pointer; padding: 0 var(--space-2); flex-shrink: 0; }
+
+.patient__appt-actions { display: flex; align-items: center; gap: var(--space-2); margin-top: var(--space-3); }
+.patient__appt-label { font-size: var(--fs-small); color: var(--color-dark); opacity: 0.7; }
+.patient__select--sm { min-height: 34px; max-width: 200px; }
 
 @media (max-width: 720px) {
   .patient__table thead { display: none; }

@@ -94,6 +94,11 @@ const routes = [
         name: 'admission-corrections',
         component: () => import('@/modules/admission/AdmissionCorrectionsView.vue'),
       },
+      {
+        path: 'appointments',
+        name: 'admission-appointments',
+        component: () => import('@/modules/admission/AdmissionAppointmentsView.vue'),
+      },
     ],
   },
 

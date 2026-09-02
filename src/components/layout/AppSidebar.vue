@@ -20,6 +20,7 @@ const admissionMenu = [
   { name: 'admission-patients', label: 'Pacientes' },
   { name: 'admission-accounts', label: 'Cuentas' },
   { name: 'admission-assignments', label: 'Asignaciones' },
+  { name: 'admission-appointments', label: 'Citas' },
   { name: 'admission-corrections', label: 'Correcciones' },
 ]
 

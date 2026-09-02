@@ -77,4 +77,21 @@ export const doctorService = {
     const { data } = await http.post(`/clinical/patients/${patientId}/treatments`, payload)
     return data.data
   },
+
+  async patientAppointments(patientId) {
+    const { data } = await http.get(`/clinical/patients/${patientId}/appointments-list`)
+    return data.data
+  },
+  async addAppointment(patientId, payload) {
+    const { data } = await http.post(`/clinical/patients/${patientId}/appointments`, payload)
+    return data.data
+  },
+  async rescheduleAppointment(appointmentId, payload) {
+    const { data } = await http.put(`/clinical/appointments/${appointmentId}`, payload)
+    return data.data
+  },
+  async setAppointmentStatus(appointmentId, status) {
+    const { data } = await http.post(`/clinical/appointments/${appointmentId}/status`, { status })
+    return data.data
+  },
 }
