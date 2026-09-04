@@ -58,4 +58,14 @@ export const adminService = {
     const { data } = await http.get('/roles')
     return data?.data?.data || data?.data || data || []
   },
+
+  // Professionals / health staff
+  async healthStaff(params = {}) {
+    const { data } = await http.get('/health-staff', { params })
+    return data?.data?.data || data?.data || data || []
+  },
+  async registerProfessional(payload) {
+    const { data } = await http.post('/admin/professionals/register', payload)
+    return data.data
+  },
 }

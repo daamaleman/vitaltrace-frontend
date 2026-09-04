@@ -27,6 +27,7 @@ const admissionMenu = [
 const adminMenu = [
   { name: 'admin-users', label: 'Usuarios' },
   { name: 'admin-roles', label: 'Roles y permisos' },
+  { name: 'admin-professionals', label: 'Profesionales' },
   { name: 'admin-catalogs', label: 'Catálogos' },
   { name: 'admin-audit', label: 'Auditoría' },
   { name: 'admin-config', label: 'Configuración' },

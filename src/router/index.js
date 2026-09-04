@@ -120,6 +120,16 @@ const routes = [
         component: () => import('@/modules/admin/AdminRolesView.vue'),
       },
       {
+        path: 'professionals',
+        name: 'admin-professionals',
+        component: () => import('@/modules/admin/AdminProfessionalsView.vue'),
+      },
+      {
+        path: 'professionals/new',
+        name: 'admin-professional-new',
+        component: () => import('@/modules/admin/AdminProfessionalFormView.vue'),
+      },
+      {
         path: 'catalogs',
         name: 'admin-catalogs',
         component: () => import('@/modules/admin/AdminCatalogsView.vue'),
