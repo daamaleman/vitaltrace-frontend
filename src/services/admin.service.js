@@ -53,6 +53,36 @@ export const adminService = {
     return data?.data?.data || data?.data || data || []
   },
 
+  // Specialties CRUD
+  async createSpecialty(payload) {
+    const { data } = await http.post('/specialties', payload)
+    return data.data
+  },
+  async updateSpecialty(id, payload) {
+    const { data } = await http.put(`/specialties/${id}`, payload)
+    return data.data
+  },
+
+  // Medications CRUD
+  async createMedication(payload) {
+    const { data } = await http.post('/medications', payload)
+    return data.data
+  },
+  async updateMedication(id, payload) {
+    const { data } = await http.put(`/medications/${id}`, payload)
+    return data.data
+  },
+
+  // Measurement types CRUD
+  async createMeasurementType(payload) {
+    const { data } = await http.post('/measurement-types', payload)
+    return data.data
+  },
+  async updateMeasurementType(id, payload) {
+    const { data } = await http.put(`/measurement-types/${id}`, payload)
+    return data.data
+  },
+
   // Roles
   async roles() {
     const { data } = await http.get('/roles')
