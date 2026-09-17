@@ -154,8 +154,8 @@ onMounted(load)
     <div v-if="showForm" class="rel__form">
       <h4 class="rel__form-title">Nuevo familiar</h4>
       <div class="rel__grid">
-        <AppFormField v-model="form.first_name" label="Primer nombre" required :error="fieldErrors.first_name" />
-        <AppFormField v-model="form.first_last_name" label="Primer apellido" required :error="fieldErrors.first_last_name" />
+        <AppFormField v-model="form.first_name" kind="name" label="Primer nombre" required :error="fieldErrors.first_name" />
+        <AppFormField v-model="form.first_last_name" kind="name" label="Primer apellido" required :error="fieldErrors.first_last_name" />
         <AppFormField v-model="form.date_of_birth" label="Fecha de nacimiento" type="date" required :error="fieldErrors.date_of_birth" />
         <div class="rel__field">
           <label class="rel__label" for="rel-gender">Sexo</label>
@@ -163,9 +163,9 @@ onMounted(load)
             <option v-for="o in genderOptions" :key="o.value" :value="o.value">{{ o.label }}</option>
           </select>
         </div>
-        <AppFormField v-model="form.relationship" label="Parentesco" required :error="fieldErrors.relationship" help="p. ej. Madre, Hijo, Cónyuge" />
-        <AppFormField v-model="form.phone" label="Teléfono" :error="fieldErrors.phone" />
-        <AppFormField v-model="form.email" label="Correo electrónico" type="email" required :error="fieldErrors.email" help="Se enviará un código de activación a este correo" />
+        <AppFormField v-model="form.relationship" label="Parentesco" :maxlength="100" required :error="fieldErrors.relationship" help="p. ej. Madre, Hijo, Cónyuge" />
+        <AppFormField v-model="form.phone" kind="phone" label="Teléfono" :error="fieldErrors.phone" />
+        <AppFormField v-model="form.email" kind="email" label="Correo electrónico" type="email" required :error="fieldErrors.email" help="Se enviará un código de activación a este correo" />
       </div>
 
       <p v-if="formError" class="rel__error" role="alert">{{ formError }}</p>

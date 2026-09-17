@@ -144,7 +144,7 @@ onMounted(loadAll)
         <AppFormField v-model="form.scheduled_at" label="Fecha y hora" type="datetime-local" required />
         <AppFormField v-model="form.duration_minutes" label="Duración (min)" type="number" />
       </div>
-      <AppFormField v-model="form.reason" label="Motivo" required />
+      <AppFormField v-model="form.reason" label="Motivo" :maxlength="200" required />
       <p v-if="formError" class="appts__error" role="alert">{{ formError }}</p>
       <div class="appts__form-actions">
         <AppButton variant="secondary" :disabled="saving" @click="showForm = false; resetForm()">Cancelar</AppButton>

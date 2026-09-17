@@ -4,11 +4,14 @@
  * The error message is linked via aria-describedby for screen readers.
  */
 import { computed, useId } from 'vue'
+import { blockInvalidPaste, getFieldValidationMessage, sanitizeFieldValue } from '@/utils/formValidation'
 
 const props = defineProps({
   label: { type: String, required: true },
   modelValue: { type: [String, Number], default: '' },
   type: { type: String, default: 'text' },
+  kind: { type: String, default: 'text' },
+  maxlength: { type: [String, Number], default: undefined },
   help: { type: String, default: '' },
   error: { type: String, default: '' },
   required: { type: Boolean, default: false },
@@ -27,6 +30,61 @@ const describedBy = computed(() => {
   if (props.error) ids.push(errorId.value)
   return ids.length ? ids.join(' ') : undefined
 })
+
+const defaultMaxLength = computed(() => {
+  if (props.kind === 'name') return 150
+  if (props.kind === 'phone') return 15
+  if (props.kind === 'email') return 254
+  return undefined
+})
+
+const effectiveMaxLength = computed(() => {
+  if (props.maxlength !== undefined && props.maxlength !== null && props.maxlength !== '') {
+    return Number(props.maxlength)
+  }
+
+  return defaultMaxLength.value
+})
+
+const inputMode = computed(() => {
+  if (props.type === 'email') return 'email'
+  if (props.kind === 'phone') return 'numeric'
+  if (props.type === 'number') return 'decimal'
+  return undefined
+})
+
+function onInput(event) {
+  const sanitizedValue = sanitizeFieldValue(event.target.value, {
+    kind: props.kind,
+    maxLength: effectiveMaxLength.value,
+  })
+
+  if (event.target.value !== sanitizedValue) {
+    event.target.value = sanitizedValue
+  }
+
+  emit('update:modelValue', sanitizedValue)
+}
+
+function onPaste(event) {
+  blockInvalidPaste(event, props.kind, effectiveMaxLength.value)
+}
+
+function onDrop(event) {
+  const dropText = event.dataTransfer?.getData('text/plain') ?? ''
+  if (!dropText) return
+
+  const sanitizedDrop = sanitizeFieldValue(dropText, {
+    kind: props.kind,
+    maxLength: effectiveMaxLength.value,
+  })
+
+  if (sanitizedDrop !== dropText) {
+    event.preventDefault()
+  }
+}
+
+const fieldValidationMessage = computed(() => getFieldValidationMessage(props.kind, props.label))
 </script>
 
 <template>
@@ -42,10 +100,15 @@ const describedBy = computed(() => {
       :value="modelValue"
       :required="required"
       :autocomplete="autocomplete"
+      :maxlength="effectiveMaxLength"
+      :inputmode="inputMode"
       :aria-describedby="describedBy"
       :aria-invalid="error ? 'true' : undefined"
+      :title="fieldValidationMessage"
       class="field__input"
-      @input="emit('update:modelValue', $event.target.value)"
+      @input="onInput"
+      @paste="onPaste"
+      @drop="onDrop"
     />
 
     <p v-if="help" :id="helpId" class="field__help">{{ help }}</p>

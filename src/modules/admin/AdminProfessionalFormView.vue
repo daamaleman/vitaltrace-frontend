@@ -121,6 +121,7 @@ onMounted(loadOptions)
           <AppFormField
             v-model="form.professional_code"
             label="Código profesional"
+            :maxlength="50"
             required
             :error="fieldErrors.professional_code"
           />

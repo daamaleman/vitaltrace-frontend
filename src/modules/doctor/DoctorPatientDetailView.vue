@@ -10,6 +10,7 @@ import { ref, computed, onMounted, reactive } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { doctorService } from '@/services/doctor.service'
 import { mapHttpError } from '@/utils/httpErrors'
+import { sanitizeFieldValue } from '@/utils/formValidation'
 import { formatDateTime, ageFromDate } from '@/utils/formatters'
 import { useToastStore } from '@/stores/toast.store'
 import AppButton from '@/components/common/AppButton.vue'
@@ -353,12 +354,20 @@ onMounted(() => {
           <AppButton v-if="!showDiagnosisForm" variant="primary" @click="showDiagnosisForm = true">Registrar diagnóstico</AppButton>
         </div>
         <div v-if="showDiagnosisForm" class="patient__form">
-          <AppFormField v-model="diagnosisForm.cie_code" label="Código CIE (opcional)" />
+          <AppFormField v-model="diagnosisForm.cie_code" label="Código CIE (opcional)" :maxlength="20" />
           <div class="patient__field">
             <label class="patient__label" for="diag-desc">
               Descripción <span aria-hidden="true" class="patient__required">*</span>
             </label>
-            <textarea id="diag-desc" v-model="diagnosisForm.description" class="patient__textarea" rows="3" required></textarea>
+            <textarea
+              id="diag-desc"
+              :value="diagnosisForm.description"
+              class="patient__textarea"
+              rows="3"
+              maxlength="500"
+              required
+              @input="diagnosisForm.description = sanitizeFieldValue($event.target.value, { kind: 'text', maxLength: 500 })"
+            ></textarea>
           </div>
           <AppFormField v-model="diagnosisForm.diagnosis_date" label="Fecha de diagnóstico" type="date" required />
           <div class="patient__field">
@@ -401,10 +410,12 @@ onMounted(() => {
             </label>
             <textarea
               id="evo-summary"
-              v-model="evolutionForm.clinical_summary"
+              :value="evolutionForm.clinical_summary"
               class="patient__textarea"
               rows="4"
+              maxlength="500"
               required
+              @input="evolutionForm.clinical_summary = sanitizeFieldValue($event.target.value, { kind: 'text', maxLength: 500 })"
             ></textarea>
           </div>
           <div class="patient__field">
@@ -453,7 +464,15 @@ onMounted(() => {
             <label class="patient__label" for="treat-indications">
               Indicaciones <span aria-hidden="true" class="patient__required">*</span>
             </label>
-            <textarea id="treat-indications" v-model="treatmentForm.indications" class="patient__textarea" rows="3" required></textarea>
+            <textarea
+              id="treat-indications"
+              :value="treatmentForm.indications"
+              class="patient__textarea"
+              rows="3"
+              maxlength="500"
+              required
+              @input="treatmentForm.indications = sanitizeFieldValue($event.target.value, { kind: 'text', maxLength: 500 })"
+            ></textarea>
           </div>
           <AppFormField v-model="treatmentForm.start_date" label="Fecha de inicio" type="date" required />
           <div class="patient__field">
@@ -471,9 +490,9 @@ onMounted(() => {
               <select v-model="med.medication_id" class="patient__select">
                 <option v-for="m in medicationCatalog" :key="m.value" :value="m.value">{{ m.label }}</option>
               </select>
-              <input v-model="med.dose" placeholder="Dosis" class="patient__med-input" />
-              <input v-model="med.route" placeholder="Vía" class="patient__med-input" />
-              <input v-model="med.frequency" placeholder="Frecuencia" class="patient__med-input" />
+              <input :value="med.dose" placeholder="Dosis" class="patient__med-input" maxlength="50" @input="med.dose = sanitizeFieldValue($event.target.value, { kind: 'text', maxLength: 50 })" />
+              <input :value="med.route" placeholder="Vía" class="patient__med-input" maxlength="50" @input="med.route = sanitizeFieldValue($event.target.value, { kind: 'text', maxLength: 50 })" />
+              <input :value="med.frequency" placeholder="Frecuencia" class="patient__med-input" maxlength="50" @input="med.frequency = sanitizeFieldValue($event.target.value, { kind: 'text', maxLength: 50 })" />
               <button type="button" class="patient__remove-med" @click="removeMedRow(i)">×</button>
             </div>
           </div>

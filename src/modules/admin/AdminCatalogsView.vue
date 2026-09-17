@@ -184,19 +184,19 @@ onMounted(load)
       <h3 class="cat__form-title">{{ editingId ? 'Editar' : 'Nuevo' }} registro</h3>
 
       <template v-if="activeTab === 'specialties'">
-        <AppFormField v-model="form.name" label="Nombre" required :error="formError && !form.name ? 'Requerido' : ''" />
-        <AppFormField v-model="form.description" label="Descripción" />
+        <AppFormField v-model="form.name" kind="name" label="Nombre" required :error="formError && !form.name ? 'Requerido' : ''" />
+        <AppFormField v-model="form.description" label="Descripción" :maxlength="250" />
       </template>
 
       <template v-else-if="activeTab === 'medications'">
-        <AppFormField v-model="form.generic_name" label="Nombre genérico" required />
-        <AppFormField v-model="form.presentation" label="Presentación" />
+        <AppFormField v-model="form.generic_name" kind="name" label="Nombre genérico" required />
+        <AppFormField v-model="form.presentation" label="Presentación" :maxlength="150" />
       </template>
 
       <template v-else>
-        <AppFormField v-model="form.name" label="Nombre" required />
-        <AppFormField v-model="form.base_unit" label="Unidad base" required />
-        <AppFormField v-model="form.decimals" label="Decimales" type="number" />
+        <AppFormField v-model="form.name" kind="name" label="Nombre" required />
+        <AppFormField v-model="form.base_unit" label="Unidad base" :maxlength="50" required />
+        <AppFormField v-model="form.decimals" kind="number" label="Decimales" type="number" />
       </template>
 
       <label class="cat__check">

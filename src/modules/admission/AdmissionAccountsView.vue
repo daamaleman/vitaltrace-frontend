@@ -7,6 +7,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { admissionService } from '@/services/admission.service'
 import { mapHttpError } from '@/utils/httpErrors'
+import { sanitizeFieldValue } from '@/utils/formValidation'
 import AppButton from '@/components/common/AppButton.vue'
 import StatusBadge from '@/components/common/StatusBadge.vue'
 import LoadingSkeleton from '@/components/common/LoadingSkeleton.vue'
@@ -125,7 +126,15 @@ onMounted(load)
         </div>
         <div class="acc__field">
           <label class="acc__label" for="acc-email">Correo electrónico</label>
-          <input id="acc-email" v-model="form.email" type="email" class="acc__input" placeholder="nombre@ejemplo.com" />
+          <input
+            id="acc-email"
+            :value="form.email"
+            type="email"
+            class="acc__input"
+            placeholder="nombre@ejemplo.com"
+            maxlength="254"
+            @input="form.email = sanitizeFieldValue($event.target.value, { kind: 'email', maxLength: 254 })"
+          />
         </div>
       </div>
       <p v-if="formError" class="acc__error" role="alert">{{ formError }}</p>

@@ -4,6 +4,7 @@
  * field so the clinician can annotate the action (recorded in history).
  */
 import { ref, watch } from 'vue'
+import { sanitizeFieldValue } from '@/utils/formValidation'
 import AppButton from './AppButton.vue'
 
 const props = defineProps({
@@ -39,10 +40,12 @@ function confirm() {
         <label for="confirm-comment" class="dialog__label">Comentario (opcional)</label>
         <textarea
           id="confirm-comment"
-          v-model="comment"
+          :value="comment"
           class="dialog__textarea"
           rows="3"
+          maxlength="500"
           placeholder="Agrega una nota para el registro…"
+          @input="comment = sanitizeFieldValue($event.target.value, { kind: 'text', maxLength: 500 })"
         ></textarea>
       </div>
 
