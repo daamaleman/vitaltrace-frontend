@@ -11,12 +11,15 @@ import StatusBadge from '@/components/common/StatusBadge.vue'
 import LoadingSkeleton from '@/components/common/LoadingSkeleton.vue'
 import EmptyState from '@/components/common/EmptyState.vue'
 import ErrorState from '@/components/common/ErrorState.vue'
+import AppPagination from '@/components/common/AppPagination.vue'
 
 const roles = ref([])
 const loading = ref(false)
 const error = ref('')
 const search = ref('')
 const statusFilter = ref('ALL')
+const page = ref(1)
+const pageSize = 6
 
 // Human-readable responsibility per role (frontend copy).
 const roleInfo = {
@@ -49,6 +52,12 @@ const filteredRoles = computed(() => {
       .toLowerCase()
       .includes(term)
   })
+})
+
+const totalPages = computed(() => Math.max(1, Math.ceil(filteredRoles.value.length / pageSize)))
+const pagedRoles = computed(() => {
+  const currentPage = Math.min(page.value, totalPages.value)
+  return filteredRoles.value.slice((currentPage - 1) * pageSize, currentPage * pageSize)
 })
 
 const statusOptions = [
@@ -97,7 +106,7 @@ onMounted(load)
     <EmptyState v-else-if="filteredRoles.length === 0" title="Sin roles" />
 
     <div v-else class="rol__list">
-      <article v-for="role in filteredRoles" :key="role.id" class="vt-card rol__item">
+      <article v-for="role in pagedRoles" :key="role.id" class="vt-card rol__item">
         <div class="rol__item-head">
           <div class="rol__names">
             <span class="rol__label">{{ info(role).label }}</span>
@@ -107,6 +116,7 @@ onMounted(load)
         </div>
         <p class="rol__desc">{{ info(role).desc }}</p>
       </article>
+      <AppPagination v-model:page="page" :total-pages="totalPages" :total-items="filteredRoles.length" label="Roles" />
     </div>
 
     <p class="rol__note">

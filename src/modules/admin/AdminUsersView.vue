@@ -13,6 +13,7 @@ import StatusBadge from '@/components/common/StatusBadge.vue'
 import LoadingSkeleton from '@/components/common/LoadingSkeleton.vue'
 import EmptyState from '@/components/common/EmptyState.vue'
 import ErrorState from '@/components/common/ErrorState.vue'
+import AppPagination from '@/components/common/AppPagination.vue'
 import UserRolesDialog from './UserRolesDialog.vue'
 
 const users = ref([])
@@ -20,6 +21,8 @@ const loading = ref(false)
 const error = ref('')
 const search = ref('')
 const statusFilter = ref('ALL')
+const page = ref(1)
+const pageSize = 10
 const blockingId = ref(null)
 const rolesDialog = ref({ open: false, user: null })
 
@@ -31,6 +34,12 @@ const filtered = computed(() => {
     if (!term) return true
     return name.includes(term) || u.email.toLowerCase().includes(term) || roleLabel(u).toLowerCase().includes(term)
   })
+})
+
+const totalPages = computed(() => Math.max(1, Math.ceil(filtered.value.length / pageSize)))
+const pagedUsers = computed(() => {
+  const currentPage = Math.min(page.value, totalPages.value)
+  return filtered.value.slice((currentPage - 1) * pageSize, currentPage * pageSize)
 })
 
 const statusOptions = [
@@ -124,7 +133,7 @@ onMounted(load)
           <tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Estado</th><th>Último acceso</th><th></th></tr>
         </thead>
         <tbody>
-          <tr v-for="u in filtered" :key="u.id">
+          <tr v-for="u in pagedUsers" :key="u.id">
             <td class="au__name">{{ userName(u) }}</td>
             <td class="au__email">{{ u.email }}</td>
             <td class="au__role">{{ roleLabel(u) }}</td>
@@ -144,6 +153,7 @@ onMounted(load)
           </tr>
         </tbody>
       </table>
+      <AppPagination v-model:page="page" :total-pages="totalPages" :total-items="filtered.length" label="Usuarios" />
     </div>
 
     <UserRolesDialog

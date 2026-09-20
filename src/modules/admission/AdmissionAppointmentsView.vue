@@ -15,6 +15,7 @@ import StatusBadge from '@/components/common/StatusBadge.vue'
 import LoadingSkeleton from '@/components/common/LoadingSkeleton.vue'
 import EmptyState from '@/components/common/EmptyState.vue'
 import ErrorState from '@/components/common/ErrorState.vue'
+import AppPagination from '@/components/common/AppPagination.vue'
 
 const toast = useToastStore()
 
@@ -25,6 +26,8 @@ const loading = ref(false)
 const error = ref('')
 const search = ref('')
 const statusFilter = ref('ALL')
+const page = ref(1)
+const pageSize = 8
 
 const showForm = ref(false)
 const saving = ref(false)
@@ -63,6 +66,12 @@ const filteredAppointments = computed(() => {
     const reason = (appt.reason ?? '').toLowerCase()
     return patient.includes(term) || staffMember.includes(term) || reason.includes(term)
   })
+})
+
+const totalPages = computed(() => Math.max(1, Math.ceil(filteredAppointments.value.length / pageSize)))
+const pagedAppointments = computed(() => {
+  const currentPage = Math.min(page.value, totalPages.value)
+  return filteredAppointments.value.slice((currentPage - 1) * pageSize, currentPage * pageSize)
 })
 
 function personName(p) {
@@ -183,7 +192,7 @@ onMounted(loadAll)
     <ErrorState v-else-if="error" :message="error" @retry="loadAll" />
     <EmptyState v-else-if="filteredAppointments.length === 0" title="No hay citas registradas" />
     <ul v-else class="appts__list">
-      <li v-for="a in filteredAppointments" :key="a.id" class="appts__item vt-card">
+      <li v-for="a in pagedAppointments" :key="a.id" class="appts__item vt-card">
         <div class="appts__item-main">
           <span class="appts__item-title">{{ a.reason }}</span>
           <StatusBadge :value="a.status" kind="clinical" />
@@ -205,6 +214,7 @@ onMounted(loadAll)
         </div>
       </li>
     </ul>
+    <AppPagination v-model:page="page" :total-pages="totalPages" :total-items="filteredAppointments.length" label="Citas" />
   </div>
 </template>
 

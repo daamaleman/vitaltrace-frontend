@@ -14,6 +14,7 @@ import StatusBadge from '@/components/common/StatusBadge.vue'
 import LoadingSkeleton from '@/components/common/LoadingSkeleton.vue'
 import EmptyState from '@/components/common/EmptyState.vue'
 import ErrorState from '@/components/common/ErrorState.vue'
+import AppPagination from '@/components/common/AppPagination.vue'
 
 const router = useRouter()
 
@@ -21,6 +22,8 @@ const alerts = ref([])
 const loading = ref(false)
 const error = ref('')
 const activeFilter = ref('ALL')
+const page = ref(1)
+const pageSize = 10
 
 const filters = [
   { value: 'ALL', label: 'Todas' },
@@ -33,6 +36,12 @@ const filters = [
 const filteredAlerts = computed(() => {
   if (activeFilter.value === 'ALL') return alerts.value
   return alerts.value.filter((a) => a.status === activeFilter.value)
+})
+
+const totalPages = computed(() => Math.max(1, Math.ceil(filteredAlerts.value.length / pageSize)))
+const pagedAlerts = computed(() => {
+  const currentPage = Math.min(page.value, totalPages.value)
+  return filteredAlerts.value.slice((currentPage - 1) * pageSize, currentPage * pageSize)
 })
 
 const openCount = computed(
@@ -113,7 +122,7 @@ onMounted(loadAlerts)
           </tr>
         </thead>
         <tbody>
-          <tr v-for="alert in filteredAlerts" :key="alert.id" class="alerts__row" @click="openAlert(alert.id)">
+          <tr v-for="alert in pagedAlerts" :key="alert.id" class="alerts__row" @click="openAlert(alert.id)">
             <td>
               <div class="alerts__patient">
                 <span class="alerts__patient-name">{{ patientName(alert) }}</span>
@@ -131,6 +140,7 @@ onMounted(loadAlerts)
           </tr>
         </tbody>
       </table>
+      <AppPagination v-model:page="page" :total-pages="totalPages" :total-items="filteredAlerts.length" label="Alertas" />
     </div>
   </div>
 </template>

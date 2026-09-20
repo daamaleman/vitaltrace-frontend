@@ -10,12 +10,15 @@ import { formatDateTime } from '@/utils/formatters'
 import LoadingSkeleton from '@/components/common/LoadingSkeleton.vue'
 import EmptyState from '@/components/common/EmptyState.vue'
 import ErrorState from '@/components/common/ErrorState.vue'
+import AppPagination from '@/components/common/AppPagination.vue'
 
 const logs = ref([])
 const loading = ref(false)
 const error = ref('')
 const search = ref('')
 const actionFilter = ref('ALL')
+const page = ref(1)
+const pageSize = 8
 
 const actionFilters = [
   { value: 'ALL', label: 'Todas' },
@@ -38,6 +41,12 @@ const filtered = computed(() => {
     const record = String(l.record_id ?? '').toLowerCase()
     return actor.includes(term) || note.includes(term) || table.includes(term) || ip.includes(term) || record.includes(term)
   })
+})
+
+const totalPages = computed(() => Math.max(1, Math.ceil(filtered.value.length / pageSize)))
+const pagedLogs = computed(() => {
+  const currentPage = Math.min(page.value, totalPages.value)
+  return filtered.value.slice((currentPage - 1) * pageSize, currentPage * pageSize)
 })
 
 function actorName(log) {
@@ -113,7 +122,7 @@ onMounted(load)
     <EmptyState v-else-if="filtered.length === 0" title="Sin registros de auditoría" />
 
     <div v-else class="ad__timeline">
-      <article v-for="log in filtered" :key="log.id" class="vt-card ad__entry">
+      <article v-for="log in pagedLogs" :key="log.id" class="vt-card ad__entry">
         <div class="ad__entry-main">
           <div class="ad__entry-head">
             <span class="ad__actor">{{ actorName(log) }}</span>
@@ -131,6 +140,7 @@ onMounted(load)
           <span v-if="log.ip_address" class="ad__ip">{{ log.ip_address }}</span>
         </div>
       </article>
+      <AppPagination v-model:page="page" :total-pages="totalPages" :total-items="filtered.length" label="Eventos" />
     </div>
   </div>
 </template>

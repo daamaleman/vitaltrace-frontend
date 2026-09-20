@@ -14,6 +14,7 @@ import StatusBadge from '@/components/common/StatusBadge.vue'
 import LoadingSkeleton from '@/components/common/LoadingSkeleton.vue'
 import EmptyState from '@/components/common/EmptyState.vue'
 import ErrorState from '@/components/common/ErrorState.vue'
+import AppPagination from '@/components/common/AppPagination.vue'
 
 const router = useRouter()
 
@@ -23,6 +24,8 @@ const error = ref('')
 const search = ref('')
 const statusFilter = ref('ALL')
 const typeFilter = ref('ALL')
+const page = ref(1)
+const pageSize = 10
 
 const filtered = computed(() => {
   const term = search.value.trim().toLowerCase()
@@ -33,6 +36,12 @@ const filtered = computed(() => {
     if (!term) return true
     return name.includes(term) || String(professionalCode(s)).toLowerCase().includes(term) || specialtyLabel(s).toLowerCase().includes(term)
   })
+})
+
+const totalPages = computed(() => Math.max(1, Math.ceil(filtered.value.length / pageSize)))
+const pagedStaff = computed(() => {
+  const currentPage = Math.min(page.value, totalPages.value)
+  return filtered.value.slice((currentPage - 1) * pageSize, currentPage * pageSize)
 })
 
 const statusOptions = [
@@ -119,7 +128,7 @@ onMounted(load)
           <tr><th>Nombre</th><th>Tipo</th><th>Código</th><th>Especialidad</th><th>Estado</th></tr>
         </thead>
         <tbody>
-          <tr v-for="s in filtered" :key="s.id">
+          <tr v-for="s in pagedStaff" :key="s.id">
             <td class="pro__name">{{ staffName(s) }}</td>
             <td class="pro__type">{{ s.professional_type || '—' }}</td>
             <td class="pro__code">{{ professionalCode(s) }}</td>
@@ -128,6 +137,7 @@ onMounted(load)
           </tr>
         </tbody>
       </table>
+      <AppPagination v-model:page="page" :total-pages="totalPages" :total-items="filtered.length" label="Profesionales" />
     </div>
   </div>
 </template>

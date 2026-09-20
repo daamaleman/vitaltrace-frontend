@@ -14,6 +14,7 @@ import StatusBadge from '@/components/common/StatusBadge.vue'
 import LoadingSkeleton from '@/components/common/LoadingSkeleton.vue'
 import EmptyState from '@/components/common/EmptyState.vue'
 import ErrorState from '@/components/common/ErrorState.vue'
+import AppPagination from '@/components/common/AppPagination.vue'
 
 const router = useRouter()
 
@@ -22,6 +23,9 @@ const loading = ref(false)
 const error = ref('')
 const search = ref('')
 const statusFilter = ref('ALL')
+const upcomingPage = ref(1)
+const pastPage = ref(1)
+const pageSize = 6
 
 const now = Date.now()
 
@@ -61,6 +65,17 @@ const past = computed(() =>
     .filter((a) => scheduledTime(a) < now || ['CANCELLED', 'ATTENDED', 'NO_SHOW'].includes(a.status))
     .sort((a, b) => scheduledTime(b) - scheduledTime(a)),
 )
+
+const upcomingTotalPages = computed(() => Math.max(1, Math.ceil(upcoming.value.length / pageSize)))
+const pastTotalPages = computed(() => Math.max(1, Math.ceil(past.value.length / pageSize)))
+const pagedUpcoming = computed(() => {
+  const currentPage = Math.min(upcomingPage.value, upcomingTotalPages.value)
+  return upcoming.value.slice((currentPage - 1) * pageSize, currentPage * pageSize)
+})
+const pagedPast = computed(() => {
+  const currentPage = Math.min(pastPage.value, pastTotalPages.value)
+  return past.value.slice((currentPage - 1) * pageSize, currentPage * pageSize)
+})
 
 function patientName(appt) {
   const p = appt.patient?.person
@@ -118,7 +133,7 @@ onMounted(loadAppointments)
           <EmptyState v-if="upcoming.length === 0" title="No hay citas próximas" />
           <ul v-else class="appts__list">
             <li
-              v-for="appt in upcoming"
+              v-for="appt in pagedUpcoming"
               :key="appt.id"
               class="appts__item appts__item--clickable"
               @click="openPatient(appt)"
@@ -134,6 +149,7 @@ onMounted(loadAppointments)
               <StatusBadge :value="appt.status" kind="clinical" />
             </li>
           </ul>
+          <AppPagination v-model:page="upcomingPage" :total-pages="upcomingTotalPages" :total-items="upcoming.length" label="Próximas" />
         </div>
       </section>
 
@@ -143,7 +159,7 @@ onMounted(loadAppointments)
           <EmptyState v-if="past.length === 0" title="No hay citas pasadas" />
           <ul v-else class="appts__list">
             <li
-              v-for="appt in past"
+              v-for="appt in pagedPast"
               :key="appt.id"
               class="appts__item appts__item--clickable"
               @click="openPatient(appt)"
@@ -159,6 +175,7 @@ onMounted(loadAppointments)
               <StatusBadge :value="appt.status" kind="clinical" />
             </li>
           </ul>
+          <AppPagination v-model:page="pastPage" :total-pages="pastTotalPages" :total-items="past.length" label="Pasadas" />
         </div>
       </section>
     </template>

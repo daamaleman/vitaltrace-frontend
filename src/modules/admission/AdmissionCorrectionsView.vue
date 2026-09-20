@@ -14,6 +14,7 @@ import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 import LoadingSkeleton from '@/components/common/LoadingSkeleton.vue'
 import EmptyState from '@/components/common/EmptyState.vue'
 import ErrorState from '@/components/common/ErrorState.vue'
+import AppPagination from '@/components/common/AppPagination.vue'
 
 const toast = useToastStore()
 
@@ -22,6 +23,8 @@ const loading = ref(false)
 const error = ref('')
 const filter = ref('PENDING')
 const actionLoading = ref(false)
+const page = ref(1)
+const pageSize = 8
 
 const dialog = ref({ open: false, action: null, id: null, title: '', label: '' })
 
@@ -35,6 +38,12 @@ const filters = [
 const filtered = computed(() => {
   if (filter.value === 'ALL') return corrections.value
   return corrections.value.filter((c) => c.status === filter.value)
+})
+
+const totalPages = computed(() => Math.max(1, Math.ceil(filtered.value.length / pageSize)))
+const pagedCorrections = computed(() => {
+  const currentPage = Math.min(page.value, totalPages.value)
+  return filtered.value.slice((currentPage - 1) * pageSize, currentPage * pageSize)
 })
 
 function patientName(c) {
@@ -120,7 +129,7 @@ onMounted(load)
     />
 
     <div v-else class="corr__list">
-      <article v-for="c in filtered" :key="c.id" class="vt-card corr__item">
+      <article v-for="c in pagedCorrections" :key="c.id" class="vt-card corr__item">
         <div class="corr__item-head">
           <div>
             <span class="corr__patient">{{ patientName(c) }}</span>
@@ -151,6 +160,7 @@ onMounted(load)
           <button type="button" class="vt-btn-primary" @click="openDialog('approve', c.id)">Aprobar</button>
         </div>
       </article>
+      <AppPagination v-model:page="page" :total-pages="totalPages" :total-items="filtered.length" label="Correcciones" />
     </div>
 
     <ConfirmDialog

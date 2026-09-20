@@ -4,18 +4,21 @@
  * Lists patients with their current care team (primary doctor, nurse) and
  * lets Admission jump to the patient detail to manage assignments (§8.4).
  */
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { admissionService } from '@/services/admission.service'
 import { mapHttpError } from '@/utils/httpErrors'
 import LoadingSkeleton from '@/components/common/LoadingSkeleton.vue'
 import EmptyState from '@/components/common/EmptyState.vue'
 import ErrorState from '@/components/common/ErrorState.vue'
+import AppPagination from '@/components/common/AppPagination.vue'
 
 const router = useRouter()
 const patients = ref([])
 const loading = ref(false)
 const error = ref('')
+const page = ref(1)
+const pageSize = 10
 
 function patientName(patient) {
   const p = patient.person
@@ -45,6 +48,12 @@ function nurse(patient) {
 function manage(patient) {
   router.push({ name: 'admission-patient-edit', params: { id: patient.id } })
 }
+
+const totalPages = computed(() => Math.max(1, Math.ceil(patients.value.length / pageSize)))
+const pagedPatients = computed(() => {
+  const currentPage = Math.min(page.value, totalPages.value)
+  return patients.value.slice((currentPage - 1) * pageSize, currentPage * pageSize)
+})
 
 async function load() {
   loading.value = true
@@ -78,7 +87,7 @@ onMounted(load)
           <tr><th>Paciente</th><th>Médico principal</th><th>Enfermero</th><th></th></tr>
         </thead>
         <tbody>
-          <tr v-for="patient in patients" :key="patient.id">
+          <tr v-for="patient in pagedPatients" :key="patient.id">
             <td class="asg__name">
               {{ patientName(patient) }}
               <span class="asg__record">{{ patient.record_number }}</span>
@@ -97,6 +106,7 @@ onMounted(load)
           </tr>
         </tbody>
       </table>
+      <AppPagination v-model:page="page" :total-pages="totalPages" :total-items="patients.length" label="Pacientes" />
     </div>
   </div>
 </template>

@@ -12,6 +12,7 @@ import StatusBadge from '@/components/common/StatusBadge.vue'
 import LoadingSkeleton from '@/components/common/LoadingSkeleton.vue'
 import EmptyState from '@/components/common/EmptyState.vue'
 import ErrorState from '@/components/common/ErrorState.vue'
+import AppPagination from '@/components/common/AppPagination.vue'
 
 const router = useRouter()
 
@@ -20,6 +21,8 @@ const loading = ref(false)
 const error = ref('')
 const search = ref('')
 const statusFilter = ref('ALL')
+const page = ref(1)
+const pageSize = 10
 
 const filtered = computed(() => {
   const term = search.value.trim().toLowerCase()
@@ -29,6 +32,12 @@ const filtered = computed(() => {
     if (!term) return true
     return name.includes(term) || (p.record_number ?? '').toLowerCase().includes(term)
   })
+})
+
+const totalPages = computed(() => Math.max(1, Math.ceil(filtered.value.length / pageSize)))
+const pagedPatients = computed(() => {
+  const currentPage = Math.min(page.value, totalPages.value)
+  return filtered.value.slice((currentPage - 1) * pageSize, currentPage * pageSize)
 })
 
 const statusOptions = [
@@ -106,7 +115,7 @@ onMounted(loadPatients)
           <tr><th>Paciente</th><th>Edad</th><th>Estado</th><th>Ingreso</th><th></th></tr>
         </thead>
         <tbody>
-          <tr v-for="p in filtered" :key="p.id">
+          <tr v-for="p in pagedPatients" :key="p.id">
             <td>
               <div class="ap__identity">
                 <span class="ap__name">{{ patientName(p) }}</span>
@@ -122,6 +131,7 @@ onMounted(loadPatients)
           </tr>
         </tbody>
       </table>
+      <AppPagination v-model:page="page" :total-pages="totalPages" :total-items="filtered.length" label="Pacientes" />
     </div>
   </div>
 </template>

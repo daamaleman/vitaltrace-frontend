@@ -12,6 +12,7 @@ import AppButton from '@/components/common/AppButton.vue'
 import AppFormField from '@/components/common/AppFormField.vue'
 import LoadingSkeleton from '@/components/common/LoadingSkeleton.vue'
 import ErrorState from '@/components/common/ErrorState.vue'
+import AppPagination from '@/components/common/AppPagination.vue'
 
 const toast = useToastStore()
 const activeTab = ref('specialties')
@@ -22,6 +23,8 @@ const medications = ref([])
 const measurementTypes = ref([])
 const search = ref('')
 const statusFilter = ref('ALL')
+const page = ref(1)
+const pageSize = 10
 
 const tabs = [
   { value: 'specialties', label: 'Especialidades' },
@@ -168,6 +171,12 @@ const filteredList = computed(() => {
   })
 })
 
+const totalPages = computed(() => Math.max(1, Math.ceil(filteredList.value.length / pageSize)))
+const pagedList = computed(() => {
+  const currentPage = Math.min(page.value, totalPages.value)
+  return filteredList.value.slice((currentPage - 1) * pageSize, currentPage * pageSize)
+})
+
 const statusOptions = [
   { value: 'ALL', label: 'Todos los estados' },
   { value: 'ACTIVE', label: 'Activos' },
@@ -261,7 +270,7 @@ onMounted(load)
           <tr v-else><th>Nombre</th><th>Unidad</th><th>Decimales</th><th>Estado</th><th>Acciones</th></tr>
         </thead>
         <tbody>
-          <tr v-for="item in filteredList" :key="item.id">
+          <tr v-for="item in pagedList" :key="item.id">
             <template v-if="activeTab === 'specialties'">
               <td class="cat__name">{{ item.name }}</td>
               <td class="cat__meta">{{ item.description || '—' }}</td>
@@ -286,6 +295,7 @@ onMounted(load)
           <tr v-if="filteredList.length === 0"><td :colspan="activeTab === 'measurementTypes' ? 5 : 4" class="cat__empty">Sin registros</td></tr>
         </tbody>
       </table>
+      <AppPagination v-model:page="page" :total-pages="totalPages" :total-items="filteredList.length" label="Registros" />
     </div>
   </div>
 </template>
