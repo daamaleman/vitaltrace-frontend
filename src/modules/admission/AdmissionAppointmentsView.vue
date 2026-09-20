@@ -4,7 +4,7 @@
  * professional, list all, change status. No assignment scoping (admission
  * has broad administrative access).
  */
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { admissionService } from '@/services/admission.service'
 import { mapHttpError } from '@/utils/httpErrors'
 import { formatDateTime } from '@/utils/formatters'
@@ -23,6 +23,8 @@ const patients = ref([])
 const staff = ref([])
 const loading = ref(false)
 const error = ref('')
+const search = ref('')
+const statusFilter = ref('ALL')
 
 const showForm = ref(false)
 const saving = ref(false)
@@ -44,6 +46,24 @@ const statuses = [
   { value: 'CANCELLED', label: 'Cancelada' },
   { value: 'NO_SHOW', label: 'No asistió' },
 ]
+
+const statusOptions = [
+  { value: 'ALL', label: 'Todos los estados' },
+  ...statuses,
+]
+
+const filteredAppointments = computed(() => {
+  const term = search.value.trim().toLowerCase()
+  return appointments.value.filter((appt) => {
+    if (statusFilter.value !== 'ALL' && appt.status !== statusFilter.value) return false
+    if (!term) return true
+
+    const patient = patientLabel(appt).toLowerCase()
+    const staffMember = staffLabel(appt).toLowerCase()
+    const reason = (appt.reason ?? '').toLowerCase()
+    return patient.includes(term) || staffMember.includes(term) || reason.includes(term)
+  })
+})
 
 function personName(p) {
   if (!p) return '—'
@@ -120,6 +140,13 @@ onMounted(loadAll)
       <AppButton v-if="!showForm" variant="primary" @click="showForm = true">Agendar cita</AppButton>
     </header>
 
+    <div class="appts__searchbar">
+      <input v-model="search" type="search" class="appts__search" placeholder="Buscar por paciente, profesional o motivo…" aria-label="Buscar citas" />
+      <select v-model="statusFilter" class="appts__filter" aria-label="Filtrar citas por estado">
+        <option v-for="option in statusOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
+      </select>
+    </div>
+
     <div v-if="showForm" class="appts__form vt-card">
       <h3 class="appts__form-title">Nueva cita</h3>
       <div class="appts__grid">
@@ -154,9 +181,9 @@ onMounted(loadAll)
 
     <LoadingSkeleton v-if="loading" :rows="4" />
     <ErrorState v-else-if="error" :message="error" @retry="loadAll" />
-    <EmptyState v-else-if="appointments.length === 0" title="No hay citas registradas" />
+    <EmptyState v-else-if="filteredAppointments.length === 0" title="No hay citas registradas" />
     <ul v-else class="appts__list">
-      <li v-for="a in appointments" :key="a.id" class="appts__item vt-card">
+      <li v-for="a in filteredAppointments" :key="a.id" class="appts__item vt-card">
         <div class="appts__item-main">
           <span class="appts__item-title">{{ a.reason }}</span>
           <StatusBadge :value="a.status" kind="clinical" />
@@ -184,6 +211,14 @@ onMounted(loadAll)
 <style scoped>
 .appts__header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-5); gap: var(--space-4); flex-wrap: wrap; }
 .appts__title { font-size: var(--fs-featured); color: var(--color-navy); }
+.appts__searchbar { display: flex; gap: var(--space-3); flex-wrap: wrap; align-items: center; margin-bottom: var(--space-5); }
+.appts__search,
+.appts__filter {
+  font-family: var(--font-body); font-size: var(--fs-body);
+  border: 1px solid var(--border-subtle); border-radius: var(--radius-md);
+  min-height: var(--touch-min); padding: 0 var(--space-4); background: var(--bg-card);
+}
+.appts__search { width: 100%; max-width: 420px; }
 .appts__form { margin-bottom: var(--space-5); }
 .appts__form-title { font-size: var(--fs-body); font-weight: 600; color: var(--color-navy); margin-bottom: var(--space-4); }
 .appts__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0 var(--space-4); }

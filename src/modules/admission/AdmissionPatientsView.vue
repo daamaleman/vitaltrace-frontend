@@ -19,15 +19,26 @@ const patients = ref([])
 const loading = ref(false)
 const error = ref('')
 const search = ref('')
+const statusFilter = ref('ALL')
 
 const filtered = computed(() => {
   const term = search.value.trim().toLowerCase()
-  if (!term) return patients.value
   return patients.value.filter((p) => {
+    if (statusFilter.value !== 'ALL' && p.administrative_status !== statusFilter.value) return false
     const name = patientName(p).toLowerCase()
+    if (!term) return true
     return name.includes(term) || (p.record_number ?? '').toLowerCase().includes(term)
   })
 })
+
+const statusOptions = [
+  { value: 'ALL', label: 'Todos los estados' },
+  { value: 'PRE_REGISTERED', label: 'Preregistrados' },
+  { value: 'ACTIVE', label: 'Activos' },
+  { value: 'INACTIVE', label: 'Inactivos' },
+  { value: 'DISCHARGED', label: 'Dados de alta' },
+  { value: 'ARCHIVED', label: 'Archivados' },
+]
 
 function patientName(p) {
   const person = p.person
@@ -77,6 +88,9 @@ onMounted(loadPatients)
         placeholder="Buscar por nombre o número de expediente…"
         aria-label="Buscar pacientes"
       />
+      <select v-model="statusFilter" class="ap__filter" aria-label="Filtrar pacientes por estado">
+        <option v-for="option in statusOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
+      </select>
     </div>
 
     <div class="vt-card ap__panel">
@@ -115,9 +129,14 @@ onMounted(loadPatients)
 <style scoped>
 .ap__header { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-4); margin-bottom: var(--space-5); flex-wrap: wrap; }
 .ap__subtitle { color: var(--color-dark); opacity: 0.7; font-size: var(--fs-small); margin-top: var(--space-2); }
-.ap__search { margin-bottom: var(--space-5); }
+.ap__search { display: flex; gap: var(--space-3); margin-bottom: var(--space-5); flex-wrap: wrap; align-items: center; }
 .ap__search-input {
   width: 100%; max-width: 380px;
+  font-family: var(--font-body); font-size: var(--fs-body);
+  border: 1px solid var(--border-subtle); border-radius: var(--radius-md);
+  min-height: var(--touch-min); padding: 0 var(--space-4); background: var(--bg-card);
+}
+.ap__filter {
   font-family: var(--font-body); font-size: var(--fs-body);
   border: 1px solid var(--border-subtle); border-radius: var(--radius-md);
   min-height: var(--touch-min); padding: 0 var(--space-4); background: var(--bg-card);

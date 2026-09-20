@@ -19,7 +19,7 @@ const systemInfo = [
 const stack = [
   { label: 'Backend', value: 'Laravel 10.50.2 · PHP 8.2 · API REST' },
   { label: 'Frontend', value: 'Vue 3.5 · Composition API · Vite · Pinia' },
-  { label: 'Base de datos', value: 'MySQL / MariaDB (normalizada)' },
+  { label: 'Base de datos', value: 'MySQL (normalizada)' },
   { label: 'Autenticación', value: 'Laravel Sanctum · sesión por cookies (SPA)' },
 ]
 

@@ -4,7 +4,7 @@
  * Read-only list of the roles defined in the system, with their
  * responsibility described. Permissions are enforced in the backend.
  */
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { adminService } from '@/services/admin.service'
 import { mapHttpError } from '@/utils/httpErrors'
 import StatusBadge from '@/components/common/StatusBadge.vue'
@@ -15,6 +15,8 @@ import ErrorState from '@/components/common/ErrorState.vue'
 const roles = ref([])
 const loading = ref(false)
 const error = ref('')
+const search = ref('')
+const statusFilter = ref('ALL')
 
 // Human-readable responsibility per role (frontend copy).
 const roleInfo = {
@@ -33,6 +35,27 @@ function info(role) {
 function statusValue(active) {
   return active ? 'ACTIVE' : 'INACTIVE'
 }
+
+const filteredRoles = computed(() => {
+  const term = search.value.trim().toLowerCase()
+  return roles.value.filter((role) => {
+    if (statusFilter.value !== 'ALL' && statusValue(role.active) !== statusFilter.value) return false
+    if (!term) return true
+
+    const details = info(role)
+    return [role.name, details.label, details.desc, role.description]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase()
+      .includes(term)
+  })
+})
+
+const statusOptions = [
+  { value: 'ALL', label: 'Todos los estados' },
+  { value: 'ACTIVE', label: 'Activos' },
+  { value: 'INACTIVE', label: 'Inactivos' },
+]
 
 async function load() {
   loading.value = true
@@ -56,12 +79,25 @@ onMounted(load)
       <p class="rol__subtitle">{{ roles.length }} roles definidos en el sistema</p>
     </header>
 
+    <div class="rol__searchbar">
+      <input
+        v-model="search"
+        type="search"
+        class="rol__search"
+        placeholder="Buscar por código, nombre o descripción…"
+        aria-label="Buscar roles"
+      />
+      <select v-model="statusFilter" class="rol__filter" aria-label="Filtrar roles por estado">
+        <option v-for="option in statusOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
+      </select>
+    </div>
+
     <LoadingSkeleton v-if="loading" :rows="6" />
     <ErrorState v-else-if="error" :message="error" @retry="load" />
-    <EmptyState v-else-if="roles.length === 0" title="Sin roles" />
+    <EmptyState v-else-if="filteredRoles.length === 0" title="Sin roles" />
 
     <div v-else class="rol__list">
-      <article v-for="role in roles" :key="role.id" class="vt-card rol__item">
+      <article v-for="role in filteredRoles" :key="role.id" class="vt-card rol__item">
         <div class="rol__item-head">
           <div class="rol__names">
             <span class="rol__label">{{ info(role).label }}</span>
@@ -82,6 +118,14 @@ onMounted(load)
 <style scoped>
 .rol__header { margin-bottom: var(--space-5); }
 .rol__subtitle { color: var(--color-dark); opacity: 0.7; font-size: var(--fs-small); margin-top: var(--space-2); }
+.rol__searchbar { display: flex; gap: var(--space-3); margin-bottom: var(--space-5); flex-wrap: wrap; align-items: center; }
+.rol__search,
+.rol__filter {
+  font-family: var(--font-body); font-size: var(--fs-body);
+  border: 1px solid var(--border-subtle); border-radius: var(--radius-md);
+  min-height: var(--touch-min); padding: 0 var(--space-4); background: var(--bg-card);
+}
+.rol__search { width: 100%; max-width: 420px; }
 .rol__list { display: flex; flex-direction: column; gap: var(--space-3); }
 .rol__item-head { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-4); margin-bottom: var(--space-3); }
 .rol__names { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }

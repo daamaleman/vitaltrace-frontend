@@ -21,15 +21,31 @@ const staff = ref([])
 const loading = ref(false)
 const error = ref('')
 const search = ref('')
+const statusFilter = ref('ALL')
+const typeFilter = ref('ALL')
 
 const filtered = computed(() => {
   const term = search.value.trim().toLowerCase()
-  if (!term) return staff.value
   return staff.value.filter((s) => {
+    if (statusFilter.value !== 'ALL' && statusValue(s.active) !== statusFilter.value) return false
+    if (typeFilter.value !== 'ALL' && (s.professional_type || '—') !== typeFilter.value) return false
     const name = staffName(s).toLowerCase()
-    return name.includes(term) || String(professionalCode(s)).toLowerCase().includes(term)
+    if (!term) return true
+    return name.includes(term) || String(professionalCode(s)).toLowerCase().includes(term) || specialtyLabel(s).toLowerCase().includes(term)
   })
 })
+
+const statusOptions = [
+  { value: 'ALL', label: 'Todos los estados' },
+  { value: 'ACTIVE', label: 'Activos' },
+  { value: 'INACTIVE', label: 'Inactivos' },
+]
+
+const typeOptions = [
+  { value: 'ALL', label: 'Todos los tipos' },
+  { value: 'DOCTOR', label: 'Médico' },
+  { value: 'NURSE', label: 'Enfermero' },
+]
 
 function staffName(s) {
   const p = s.person
@@ -86,6 +102,12 @@ onMounted(load)
         placeholder="Buscar por nombre o código…"
         aria-label="Buscar profesionales"
       />
+      <select v-model="typeFilter" class="pro__filter" aria-label="Filtrar profesionales por tipo">
+        <option v-for="option in typeOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
+      </select>
+      <select v-model="statusFilter" class="pro__filter" aria-label="Filtrar profesionales por estado">
+        <option v-for="option in statusOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
+      </select>
     </div>
 
     <div class="vt-card pro__panel">
@@ -113,9 +135,14 @@ onMounted(load)
 <style scoped>
 .pro__header { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-4); margin-bottom: var(--space-5); flex-wrap: wrap; }
 .pro__subtitle { color: var(--color-dark); opacity: 0.7; font-size: var(--fs-small); margin-top: var(--space-2); }
-.pro__search { margin-bottom: var(--space-5); }
+.pro__search { display: flex; gap: var(--space-3); margin-bottom: var(--space-5); flex-wrap: wrap; align-items: center; }
 .pro__search-input {
   width: 100%; max-width: 380px;
+  font-family: var(--font-body); font-size: var(--fs-body);
+  border: 1px solid var(--border-subtle); border-radius: var(--radius-md);
+  min-height: var(--touch-min); padding: 0 var(--space-4); background: var(--bg-card);
+}
+.pro__filter {
   font-family: var(--font-body); font-size: var(--fs-body);
   border: 1px solid var(--border-subtle); border-radius: var(--radius-md);
   min-height: var(--touch-min); padding: 0 var(--space-4); background: var(--bg-card);

@@ -19,17 +19,26 @@ const users = ref([])
 const loading = ref(false)
 const error = ref('')
 const search = ref('')
+const statusFilter = ref('ALL')
 const blockingId = ref(null)
 const rolesDialog = ref({ open: false, user: null })
 
 const filtered = computed(() => {
   const term = search.value.trim().toLowerCase()
-  if (!term) return users.value
   return users.value.filter((u) => {
+    if (statusFilter.value !== 'ALL' && u.status !== statusFilter.value) return false
     const name = userName(u).toLowerCase()
-    return name.includes(term) || u.email.toLowerCase().includes(term)
+    if (!term) return true
+    return name.includes(term) || u.email.toLowerCase().includes(term) || roleLabel(u).toLowerCase().includes(term)
   })
 })
+
+const statusOptions = [
+  { value: 'ALL', label: 'Todos los estados' },
+  { value: 'ACTIVE', label: 'Activos' },
+  { value: 'PENDING', label: 'Pendientes' },
+  { value: 'BLOCKED', label: 'Bloqueados' },
+]
 
 function userName(u) {
   const p = u.person
@@ -101,6 +110,9 @@ onMounted(load)
         placeholder="Buscar por nombre o correo…"
         aria-label="Buscar usuarios"
       />
+      <select v-model="statusFilter" class="au__filter" aria-label="Filtrar usuarios por estado">
+        <option v-for="option in statusOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
+      </select>
     </div>
 
     <div class="vt-card au__panel">
@@ -146,9 +158,14 @@ onMounted(load)
 <style scoped>
 .au__header { margin-bottom: var(--space-5); }
 .au__subtitle { color: var(--color-dark); opacity: 0.7; font-size: var(--fs-small); margin-top: var(--space-2); }
-.au__search { margin-bottom: var(--space-5); }
+.au__search { display: flex; gap: var(--space-3); margin-bottom: var(--space-5); flex-wrap: wrap; align-items: center; }
 .au__search-input {
   width: 100%; max-width: 380px;
+  font-family: var(--font-body); font-size: var(--fs-body);
+  border: 1px solid var(--border-subtle); border-radius: var(--radius-md);
+  min-height: var(--touch-min); padding: 0 var(--space-4); background: var(--bg-card);
+}
+.au__filter {
   font-family: var(--font-body); font-size: var(--fs-body);
   border: 1px solid var(--border-subtle); border-radius: var(--radius-md);
   min-height: var(--touch-min); padding: 0 var(--space-4); background: var(--bg-card);

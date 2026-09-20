@@ -14,6 +14,7 @@ import ErrorState from '@/components/common/ErrorState.vue'
 const logs = ref([])
 const loading = ref(false)
 const error = ref('')
+const search = ref('')
 const actionFilter = ref('ALL')
 
 const actionFilters = [
@@ -25,8 +26,18 @@ const actionFilters = [
 ]
 
 const filtered = computed(() => {
-  if (actionFilter.value === 'ALL') return logs.value
-  return logs.value.filter((l) => l.action === actionFilter.value)
+  const term = search.value.trim().toLowerCase()
+  return logs.value.filter((l) => {
+    if (actionFilter.value !== 'ALL' && l.action !== actionFilter.value) return false
+    if (!term) return true
+
+    const actor = actorName(l).toLowerCase()
+    const note = (noteFrom(l) ?? '').toLowerCase()
+    const table = (l.table ?? '').toLowerCase()
+    const ip = (l.ip_address ?? '').toLowerCase()
+    const record = String(l.record_id ?? '').toLowerCase()
+    return actor.includes(term) || note.includes(term) || table.includes(term) || ip.includes(term) || record.includes(term)
+  })
 })
 
 function actorName(log) {
@@ -87,6 +98,16 @@ onMounted(load)
       </button>
     </nav>
 
+    <div class="ad__searchbar">
+      <input
+        v-model="search"
+        type="search"
+        class="ad__search"
+        placeholder="Buscar por usuario, tabla, IP o nota…"
+        aria-label="Buscar auditoría"
+      />
+    </div>
+
     <LoadingSkeleton v-if="loading" :rows="6" />
     <ErrorState v-else-if="error" :message="error" @retry="load" />
     <EmptyState v-else-if="filtered.length === 0" title="Sin registros de auditoría" />
@@ -125,6 +146,13 @@ onMounted(load)
   min-height: 40px; padding: 0 var(--space-4); cursor: pointer;
 }
 .ad__filter--active { background: var(--color-navy); color: var(--text-on-brand); border-color: var(--color-navy); }
+.ad__searchbar { margin-bottom: var(--space-4); }
+.ad__search {
+  width: 100%; max-width: 420px;
+  font-family: var(--font-body); font-size: var(--fs-body);
+  border: 1px solid var(--border-subtle); border-radius: var(--radius-md);
+  min-height: var(--touch-min); padding: 0 var(--space-4); background: var(--bg-card);
+}
 .ad__timeline { display: flex; flex-direction: column; gap: var(--space-3); }
 .ad__entry { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-4); flex-wrap: wrap; }
 .ad__entry-head { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-2); }

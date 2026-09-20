@@ -20,6 +20,8 @@ const error = ref('')
 const specialties = ref([])
 const medications = ref([])
 const measurementTypes = ref([])
+const search = ref('')
+const statusFilter = ref('ALL')
 
 const tabs = [
   { value: 'specialties', label: 'Especialidades' },
@@ -146,6 +148,32 @@ const currentList = computed(() => {
   return measurementTypes.value
 })
 
+const filteredList = computed(() => {
+  const term = search.value.trim().toLowerCase()
+  return currentList.value.filter((item) => {
+    if (statusFilter.value !== 'ALL') {
+      const isActive = !!item.active
+      if (statusFilter.value === 'ACTIVE' && !isActive) return false
+      if (statusFilter.value === 'INACTIVE' && isActive) return false
+    }
+
+    if (!term) return true
+
+    const searchable = [item.name, item.generic_name, item.base_unit, item.description, item.presentation]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase()
+
+    return searchable.includes(term)
+  })
+})
+
+const statusOptions = [
+  { value: 'ALL', label: 'Todos los estados' },
+  { value: 'ACTIVE', label: 'Activos' },
+  { value: 'INACTIVE', label: 'Inactivos' },
+]
+
 function switchTab(v) {
   activeTab.value = v
   showForm.value = false
@@ -177,6 +205,19 @@ onMounted(load)
 
     <div class="cat__actions">
       <AppButton v-if="!showForm" variant="primary" @click="openCreate">Agregar</AppButton>
+    </div>
+
+    <div class="cat__searchbar">
+      <input
+        v-model="search"
+        type="search"
+        class="cat__search"
+        placeholder="Buscar por nombre, descripción o unidad…"
+        aria-label="Buscar catálogos"
+      />
+      <select v-model="statusFilter" class="cat__filter" aria-label="Filtrar catálogos por estado">
+        <option v-for="option in statusOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
+      </select>
     </div>
 
     <!-- Form -->
@@ -220,7 +261,7 @@ onMounted(load)
           <tr v-else><th>Nombre</th><th>Unidad</th><th>Decimales</th><th>Estado</th><th>Acciones</th></tr>
         </thead>
         <tbody>
-          <tr v-for="item in currentList" :key="item.id">
+          <tr v-for="item in filteredList" :key="item.id">
             <template v-if="activeTab === 'specialties'">
               <td class="cat__name">{{ item.name }}</td>
               <td class="cat__meta">{{ item.description || '—' }}</td>
@@ -242,7 +283,7 @@ onMounted(load)
               </button>
             </td>
           </tr>
-          <tr v-if="currentList.length === 0"><td :colspan="activeTab === 'measurementTypes' ? 5 : 4" class="cat__empty">Sin registros</td></tr>
+          <tr v-if="filteredList.length === 0"><td :colspan="activeTab === 'measurementTypes' ? 5 : 4" class="cat__empty">Sin registros</td></tr>
         </tbody>
       </table>
     </div>
@@ -256,6 +297,14 @@ onMounted(load)
 .cat__tab { font-family: var(--font-body); font-size: var(--fs-small); font-weight: 600; color: var(--color-navy); background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); min-height: 40px; padding: 0 var(--space-4); cursor: pointer; }
 .cat__tab--active { background: var(--color-navy); color: var(--text-on-brand); border-color: var(--color-navy); }
 .cat__actions { margin-bottom: var(--space-4); }
+.cat__searchbar { display: flex; gap: var(--space-3); margin-bottom: var(--space-4); flex-wrap: wrap; align-items: center; }
+.cat__search,
+.cat__filter {
+  font-family: var(--font-body); font-size: var(--fs-body);
+  border: 1px solid var(--border-subtle); border-radius: var(--radius-md);
+  min-height: var(--touch-min); padding: 0 var(--space-4); background: var(--bg-card);
+}
+.cat__search { width: 100%; max-width: 380px; }
 .cat__form { padding: var(--space-5); margin-bottom: var(--space-5); }
 .cat__form-title { font-size: var(--fs-body); font-weight: 600; color: var(--color-navy); margin-bottom: var(--space-4); }
 .cat__check { display: flex; align-items: center; gap: var(--space-2); font-size: var(--fs-small); margin: var(--space-3) 0; }

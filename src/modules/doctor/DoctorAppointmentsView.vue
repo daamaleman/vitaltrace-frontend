@@ -20,6 +20,8 @@ const router = useRouter()
 const appointments = ref([])
 const loading = ref(false)
 const error = ref('')
+const search = ref('')
+const statusFilter = ref('ALL')
 
 const now = Date.now()
 
@@ -27,14 +29,35 @@ function scheduledTime(appt) {
   return new Date(appt.scheduled_at.replace(' ', 'T')).getTime()
 }
 
+const statusOptions = [
+  { value: 'ALL', label: 'Todos los estados' },
+  { value: 'SCHEDULED', label: 'Programada' },
+  { value: 'CONFIRMED', label: 'Confirmada' },
+  { value: 'ATTENDED', label: 'Atendida' },
+  { value: 'CANCELLED', label: 'Cancelada' },
+  { value: 'NO_SHOW', label: 'No asistió' },
+]
+
+const filteredAppointments = computed(() => {
+  const term = search.value.trim().toLowerCase()
+  return appointments.value.filter((appt) => {
+    if (statusFilter.value !== 'ALL' && appt.status !== statusFilter.value) return false
+    if (!term) return true
+
+    const patient = patientName(appt).toLowerCase()
+    const reason = (appt.reason ?? '').toLowerCase()
+    return patient.includes(term) || reason.includes(term)
+  })
+})
+
 const upcoming = computed(() =>
-  appointments.value
+  filteredAppointments.value
     .filter((a) => scheduledTime(a) >= now && !['CANCELLED', 'ATTENDED', 'NO_SHOW'].includes(a.status))
     .sort((a, b) => scheduledTime(a) - scheduledTime(b)),
 )
 
 const past = computed(() =>
-  appointments.value
+  filteredAppointments.value
     .filter((a) => scheduledTime(a) < now || ['CANCELLED', 'ATTENDED', 'NO_SHOW'].includes(a.status))
     .sort((a, b) => scheduledTime(b) - scheduledTime(a)),
 )
@@ -77,6 +100,13 @@ onMounted(loadAppointments)
         </p>
       </div>
     </header>
+
+    <div class="appts__searchbar">
+      <input v-model="search" type="search" class="appts__search" placeholder="Buscar por paciente o motivo…" aria-label="Buscar citas" />
+      <select v-model="statusFilter" class="appts__filter" aria-label="Filtrar citas por estado">
+        <option v-for="option in statusOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
+      </select>
+    </div>
 
     <LoadingSkeleton v-if="loading" :rows="4" />
     <ErrorState v-else-if="error" :message="error" @retry="loadAppointments" />
@@ -141,6 +171,14 @@ onMounted(loadAppointments)
   color: var(--color-dark); opacity: 0.7;
   font-size: var(--fs-small); margin-top: var(--space-2);
 }
+.appts__searchbar { display: flex; gap: var(--space-3); flex-wrap: wrap; align-items: center; margin-bottom: var(--space-5); }
+.appts__search,
+.appts__filter {
+  font-family: var(--font-body); font-size: var(--fs-body);
+  border: 1px solid var(--border-subtle); border-radius: var(--radius-md);
+  min-height: var(--touch-min); padding: 0 var(--space-4); background: var(--bg-card);
+}
+.appts__search { width: 100%; max-width: 420px; }
 .appts__section { margin-bottom: var(--space-6); }
 .appts__section-title {
   font-size: var(--fs-featured); color: var(--color-navy);

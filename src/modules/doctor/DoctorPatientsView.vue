@@ -22,16 +22,26 @@ const patients = ref([])
 const loading = ref(false)
 const error = ref('')
 const search = ref('')
+const statusFilter = ref('ALL')
 
 const filteredPatients = computed(() => {
   const term = search.value.trim().toLowerCase()
-  if (!term) return patients.value
   return patients.value.filter((p) => {
+    if (statusFilter.value !== 'ALL' && p.administrative_status !== statusFilter.value) return false
     const name = patientName(p).toLowerCase()
     const record = (p.record_number ?? '').toLowerCase()
+    if (!term) return true
     return name.includes(term) || record.includes(term)
   })
 })
+
+const statusOptions = [
+  { value: 'ALL', label: 'Todos los estados' },
+  { value: 'ACTIVE', label: 'Activos' },
+  { value: 'INACTIVE', label: 'Inactivos' },
+  { value: 'DISCHARGED', label: 'Dados de alta' },
+  { value: 'ARCHIVED', label: 'Archivados' },
+]
 
 function patientName(patient) {
   const p = patient.person
@@ -79,6 +89,9 @@ onMounted(loadPatients)
         placeholder="Buscar por nombre o número de expediente…"
         aria-label="Buscar pacientes"
       />
+      <select v-model="statusFilter" class="patients__filter" aria-label="Filtrar pacientes por estado">
+        <option v-for="option in statusOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
+      </select>
     </div>
 
     <div class="vt-card patients__panel">
@@ -130,10 +143,19 @@ onMounted(loadPatients)
   font-size: var(--fs-small);
   margin-top: var(--space-2);
 }
-.patients__search { margin-bottom: var(--space-5); }
+.patients__search { display: flex; gap: var(--space-3); margin-bottom: var(--space-5); flex-wrap: wrap; align-items: center; }
 .patients__search-input {
   width: 100%;
   max-width: 380px;
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  min-height: var(--touch-min);
+  padding: 0 var(--space-4);
+  background: var(--bg-card);
+}
+.patients__filter {
   font-family: var(--font-body);
   font-size: var(--fs-body);
   border: 1px solid var(--border-subtle);
