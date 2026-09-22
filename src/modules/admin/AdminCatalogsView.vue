@@ -13,6 +13,7 @@ import AppFormField from '@/components/common/AppFormField.vue'
 import LoadingSkeleton from '@/components/common/LoadingSkeleton.vue'
 import ErrorState from '@/components/common/ErrorState.vue'
 import AppPagination from '@/components/common/AppPagination.vue'
+import { usePagination } from '@/composables/usePagination'
 
 const toast = useToastStore()
 const activeTab = ref('specialties')
@@ -23,8 +24,6 @@ const medications = ref([])
 const measurementTypes = ref([])
 const search = ref('')
 const statusFilter = ref('ALL')
-const page = ref(1)
-const pageSize = 10
 
 const tabs = [
   { value: 'specialties', label: 'Especialidades' },
@@ -171,11 +170,7 @@ const filteredList = computed(() => {
   })
 })
 
-const totalPages = computed(() => Math.max(1, Math.ceil(filteredList.value.length / pageSize)))
-const pagedList = computed(() => {
-  const currentPage = Math.min(page.value, totalPages.value)
-  return filteredList.value.slice((currentPage - 1) * pageSize, currentPage * pageSize)
-})
+const { page, totalPages, totalItems, paged: pagedList } = usePagination(filteredList, { pageSize: 10 })
 
 const statusOptions = [
   { value: 'ALL', label: 'Todos los estados' },
@@ -262,7 +257,8 @@ onMounted(load)
 
     <LoadingSkeleton v-if="loading" :rows="5" />
     <ErrorState v-else-if="error" :message="error" @retry="load" />
-    <div v-else class="vt-card cat__panel">
+    <template v-else>
+      <div class="vt-card cat__panel">
       <table class="cat__table">
         <thead>
           <tr v-if="activeTab === 'specialties'"><th>Nombre</th><th>Descripción</th><th>Estado</th><th>Acciones</th></tr>
@@ -295,8 +291,9 @@ onMounted(load)
           <tr v-if="filteredList.length === 0"><td :colspan="activeTab === 'measurementTypes' ? 5 : 4" class="cat__empty">Sin registros</td></tr>
         </tbody>
       </table>
-      <AppPagination v-model:page="page" :total-pages="totalPages" :total-items="filteredList.length" label="Registros" />
     </div>
+    <AppPagination v-model:page="page" :total-pages="totalPages" :total-items="totalItems" label="Registros" />
+    </template>
   </div>
 </template>
 

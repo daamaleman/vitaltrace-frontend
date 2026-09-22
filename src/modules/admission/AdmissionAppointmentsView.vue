@@ -16,6 +16,7 @@ import LoadingSkeleton from '@/components/common/LoadingSkeleton.vue'
 import EmptyState from '@/components/common/EmptyState.vue'
 import ErrorState from '@/components/common/ErrorState.vue'
 import AppPagination from '@/components/common/AppPagination.vue'
+import { usePagination } from '@/composables/usePagination'
 
 const toast = useToastStore()
 
@@ -26,8 +27,6 @@ const loading = ref(false)
 const error = ref('')
 const search = ref('')
 const statusFilter = ref('ALL')
-const page = ref(1)
-const pageSize = 8
 
 const showForm = ref(false)
 const saving = ref(false)
@@ -68,11 +67,7 @@ const filteredAppointments = computed(() => {
   })
 })
 
-const totalPages = computed(() => Math.max(1, Math.ceil(filteredAppointments.value.length / pageSize)))
-const pagedAppointments = computed(() => {
-  const currentPage = Math.min(page.value, totalPages.value)
-  return filteredAppointments.value.slice((currentPage - 1) * pageSize, currentPage * pageSize)
-})
+const { page, totalPages, totalItems, paged: pagedAppointments } = usePagination(filteredAppointments, { pageSize: 8 })
 
 function personName(p) {
   if (!p) return '—'
@@ -214,7 +209,7 @@ onMounted(loadAll)
         </div>
       </li>
     </ul>
-    <AppPagination v-model:page="page" :total-pages="totalPages" :total-items="filteredAppointments.length" label="Citas" />
+    <AppPagination v-model:page="page" :total-pages="totalPages" :total-items="totalItems" label="Citas" />
   </div>
 </template>
 

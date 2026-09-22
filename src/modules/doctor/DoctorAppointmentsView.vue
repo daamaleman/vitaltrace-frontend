@@ -15,6 +15,7 @@ import LoadingSkeleton from '@/components/common/LoadingSkeleton.vue'
 import EmptyState from '@/components/common/EmptyState.vue'
 import ErrorState from '@/components/common/ErrorState.vue'
 import AppPagination from '@/components/common/AppPagination.vue'
+import { usePagination } from '@/composables/usePagination'
 
 const router = useRouter()
 
@@ -23,9 +24,6 @@ const loading = ref(false)
 const error = ref('')
 const search = ref('')
 const statusFilter = ref('ALL')
-const upcomingPage = ref(1)
-const pastPage = ref(1)
-const pageSize = 6
 
 const now = Date.now()
 
@@ -66,16 +64,12 @@ const past = computed(() =>
     .sort((a, b) => scheduledTime(b) - scheduledTime(a)),
 )
 
-const upcomingTotalPages = computed(() => Math.max(1, Math.ceil(upcoming.value.length / pageSize)))
-const pastTotalPages = computed(() => Math.max(1, Math.ceil(past.value.length / pageSize)))
-const pagedUpcoming = computed(() => {
-  const currentPage = Math.min(upcomingPage.value, upcomingTotalPages.value)
-  return upcoming.value.slice((currentPage - 1) * pageSize, currentPage * pageSize)
-})
-const pagedPast = computed(() => {
-  const currentPage = Math.min(pastPage.value, pastTotalPages.value)
-  return past.value.slice((currentPage - 1) * pageSize, currentPage * pageSize)
-})
+const {
+  page: upcomingPage, totalPages: upcomingTotalPages, totalItems: upcomingTotalItems, paged: pagedUpcoming,
+} = usePagination(upcoming, { pageSize: 6 })
+const {
+  page: pastPage, totalPages: pastTotalPages, totalItems: pastTotalItems, paged: pagedPast,
+} = usePagination(past, { pageSize: 6 })
 
 function patientName(appt) {
   const p = appt.patient?.person
@@ -149,8 +143,8 @@ onMounted(loadAppointments)
               <StatusBadge :value="appt.status" kind="clinical" />
             </li>
           </ul>
-          <AppPagination v-model:page="upcomingPage" :total-pages="upcomingTotalPages" :total-items="upcoming.length" label="Próximas" />
         </div>
+        <AppPagination v-model:page="upcomingPage" :total-pages="upcomingTotalPages" :total-items="upcomingTotalItems" label="Próximas" />
       </section>
 
       <section class="appts__section">
@@ -175,8 +169,8 @@ onMounted(loadAppointments)
               <StatusBadge :value="appt.status" kind="clinical" />
             </li>
           </ul>
-          <AppPagination v-model:page="pastPage" :total-pages="pastTotalPages" :total-items="past.length" label="Pasadas" />
         </div>
+        <AppPagination v-model:page="pastPage" :total-pages="pastTotalPages" :total-items="pastTotalItems" label="Pasadas" />
       </section>
     </template>
   </div>

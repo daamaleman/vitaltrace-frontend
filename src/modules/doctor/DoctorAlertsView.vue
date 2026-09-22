@@ -15,6 +15,7 @@ import LoadingSkeleton from '@/components/common/LoadingSkeleton.vue'
 import EmptyState from '@/components/common/EmptyState.vue'
 import ErrorState from '@/components/common/ErrorState.vue'
 import AppPagination from '@/components/common/AppPagination.vue'
+import { usePagination } from '@/composables/usePagination'
 
 const router = useRouter()
 
@@ -22,8 +23,6 @@ const alerts = ref([])
 const loading = ref(false)
 const error = ref('')
 const activeFilter = ref('ALL')
-const page = ref(1)
-const pageSize = 10
 
 const filters = [
   { value: 'ALL', label: 'Todas' },
@@ -38,11 +37,7 @@ const filteredAlerts = computed(() => {
   return alerts.value.filter((a) => a.status === activeFilter.value)
 })
 
-const totalPages = computed(() => Math.max(1, Math.ceil(filteredAlerts.value.length / pageSize)))
-const pagedAlerts = computed(() => {
-  const currentPage = Math.min(page.value, totalPages.value)
-  return filteredAlerts.value.slice((currentPage - 1) * pageSize, currentPage * pageSize)
-})
+const { page, totalPages, totalItems, paged: pagedAlerts } = usePagination(filteredAlerts, { pageSize: 10 })
 
 const openCount = computed(
   () => alerts.value.filter((a) => a.status !== 'CLOSED').length,
@@ -140,8 +135,8 @@ onMounted(loadAlerts)
           </tr>
         </tbody>
       </table>
-      <AppPagination v-model:page="page" :total-pages="totalPages" :total-items="filteredAlerts.length" label="Alertas" />
     </div>
+    <AppPagination v-model:page="page" :total-pages="totalPages" :total-items="totalItems" label="Alertas" />
   </div>
 </template>
 

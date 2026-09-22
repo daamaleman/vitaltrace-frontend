@@ -15,6 +15,7 @@ import LoadingSkeleton from '@/components/common/LoadingSkeleton.vue'
 import EmptyState from '@/components/common/EmptyState.vue'
 import ErrorState from '@/components/common/ErrorState.vue'
 import AppPagination from '@/components/common/AppPagination.vue'
+import { usePagination } from '@/composables/usePagination'
 
 const toast = useToastStore()
 
@@ -23,8 +24,6 @@ const loading = ref(false)
 const error = ref('')
 const filter = ref('PENDING')
 const actionLoading = ref(false)
-const page = ref(1)
-const pageSize = 8
 
 const dialog = ref({ open: false, action: null, id: null, title: '', label: '' })
 
@@ -40,11 +39,7 @@ const filtered = computed(() => {
   return corrections.value.filter((c) => c.status === filter.value)
 })
 
-const totalPages = computed(() => Math.max(1, Math.ceil(filtered.value.length / pageSize)))
-const pagedCorrections = computed(() => {
-  const currentPage = Math.min(page.value, totalPages.value)
-  return filtered.value.slice((currentPage - 1) * pageSize, currentPage * pageSize)
-})
+const { page, totalPages, totalItems, paged: pagedCorrections } = usePagination(filtered, { pageSize: 8 })
 
 function patientName(c) {
   const p = c.patient?.person
@@ -160,7 +155,7 @@ onMounted(load)
           <button type="button" class="vt-btn-primary" @click="openDialog('approve', c.id)">Aprobar</button>
         </div>
       </article>
-      <AppPagination v-model:page="page" :total-pages="totalPages" :total-items="filtered.length" label="Correcciones" />
+      <AppPagination v-model:page="page" :total-pages="totalPages" :total-items="totalItems" label="Correcciones" />
     </div>
 
     <ConfirmDialog

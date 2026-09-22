@@ -12,14 +12,13 @@ import LoadingSkeleton from '@/components/common/LoadingSkeleton.vue'
 import EmptyState from '@/components/common/EmptyState.vue'
 import ErrorState from '@/components/common/ErrorState.vue'
 import AppPagination from '@/components/common/AppPagination.vue'
+import { usePagination } from '@/composables/usePagination'
 
 const roles = ref([])
 const loading = ref(false)
 const error = ref('')
 const search = ref('')
 const statusFilter = ref('ALL')
-const page = ref(1)
-const pageSize = 6
 
 // Human-readable responsibility per role (frontend copy).
 const roleInfo = {
@@ -54,11 +53,7 @@ const filteredRoles = computed(() => {
   })
 })
 
-const totalPages = computed(() => Math.max(1, Math.ceil(filteredRoles.value.length / pageSize)))
-const pagedRoles = computed(() => {
-  const currentPage = Math.min(page.value, totalPages.value)
-  return filteredRoles.value.slice((currentPage - 1) * pageSize, currentPage * pageSize)
-})
+const { page, totalPages, totalItems, paged: pagedRoles } = usePagination(filteredRoles, { pageSize: 6 })
 
 const statusOptions = [
   { value: 'ALL', label: 'Todos los estados' },
@@ -116,7 +111,7 @@ onMounted(load)
         </div>
         <p class="rol__desc">{{ info(role).desc }}</p>
       </article>
-      <AppPagination v-model:page="page" :total-pages="totalPages" :total-items="filteredRoles.length" label="Roles" />
+      <AppPagination v-model:page="page" :total-pages="totalPages" :total-items="totalItems" label="Roles" />
     </div>
 
     <p class="rol__note">

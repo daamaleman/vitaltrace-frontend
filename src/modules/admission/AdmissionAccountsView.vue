@@ -4,7 +4,7 @@
  * Lists accounts, creates access accounts (emailing a 6-digit code),
  * resends codes and blocks/unblocks accounts.
  */
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { admissionService } from '@/services/admission.service'
 import { mapHttpError } from '@/utils/httpErrors'
 import { sanitizeFieldValue } from '@/utils/formValidation'
@@ -14,6 +14,7 @@ import LoadingSkeleton from '@/components/common/LoadingSkeleton.vue'
 import EmptyState from '@/components/common/EmptyState.vue'
 import ErrorState from '@/components/common/ErrorState.vue'
 import AppPagination from '@/components/common/AppPagination.vue'
+import { usePagination } from '@/composables/usePagination'
 
 const accounts = ref([])
 const availablePeople = ref([])
@@ -23,8 +24,6 @@ const notice = ref('')
 const showForm = ref(false)
 const saving = ref(false)
 const formError = ref('')
-const page = ref(1)
-const pageSize = 8
 
 const form = reactive({ person_id: '', email: '' })
 
@@ -99,11 +98,7 @@ async function toggleBlock(account) {
   }
 }
 
-const totalPages = computed(() => Math.max(1, Math.ceil(accounts.value.length / pageSize)))
-const pagedAccounts = computed(() => {
-  const currentPage = Math.min(page.value, totalPages.value)
-  return accounts.value.slice((currentPage - 1) * pageSize, currentPage * pageSize)
-})
+const { page, totalPages, totalItems, paged: pagedAccounts } = usePagination(accounts, { pageSize: 8 })
 
 onMounted(load)
 </script>
@@ -183,8 +178,8 @@ onMounted(load)
           </tr>
         </tbody>
       </table>
-      <AppPagination v-model:page="page" :total-pages="totalPages" :total-items="accounts.length" label="Cuentas" />
     </div>
+    <AppPagination v-model:page="page" :total-pages="totalPages" :total-items="totalItems" label="Cuentas" />
   </div>
 </template>
 

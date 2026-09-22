@@ -16,6 +16,7 @@ import LoadingSkeleton from '@/components/common/LoadingSkeleton.vue'
 import EmptyState from '@/components/common/EmptyState.vue'
 import ErrorState from '@/components/common/ErrorState.vue'
 import AppPagination from '@/components/common/AppPagination.vue'
+import { usePagination } from '@/composables/usePagination'
 
 const router = useRouter()
 
@@ -24,8 +25,6 @@ const loading = ref(false)
 const error = ref('')
 const search = ref('')
 const statusFilter = ref('ALL')
-const page = ref(1)
-const pageSize = 10
 
 const filteredPatients = computed(() => {
   const term = search.value.trim().toLowerCase()
@@ -38,11 +37,7 @@ const filteredPatients = computed(() => {
   })
 })
 
-const totalPages = computed(() => Math.max(1, Math.ceil(filteredPatients.value.length / pageSize)))
-const pagedPatients = computed(() => {
-  const currentPage = Math.min(page.value, totalPages.value)
-  return filteredPatients.value.slice((currentPage - 1) * pageSize, currentPage * pageSize)
-})
+const { page, totalPages, totalItems, paged: pagedPatients } = usePagination(filteredPatients, { pageSize: 10 })
 
 const statusOptions = [
   { value: 'ALL', label: 'Todos los estados' },
@@ -140,8 +135,8 @@ onMounted(loadPatients)
           </tr>
         </tbody>
       </table>
-      <AppPagination v-model:page="page" :total-pages="totalPages" :total-items="filteredPatients.length" label="Pacientes" />
     </div>
+    <AppPagination v-model:page="page" :total-pages="totalPages" :total-items="totalItems" label="Pacientes" />
   </div>
 </template>
 

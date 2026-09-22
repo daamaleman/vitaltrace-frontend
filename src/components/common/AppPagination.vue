@@ -85,9 +85,10 @@ const visiblePages = computed(() => {
   flex-wrap: wrap;
   padding: var(--space-4);
   margin-top: var(--space-4);
-  border-top: 1px solid var(--border-subtle);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.92));
-  backdrop-filter: blur(10px);
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
 }
 
 .pager__meta {
@@ -123,36 +124,30 @@ const visiblePages = computed(() => {
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
-  padding: 4px;
-  background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
-  border-radius: 999px;
-  box-shadow: 0 6px 18px rgba(40, 49, 55, 0.06);
 }
 
 .pager__page {
   min-width: 36px;
   height: 36px;
   padding: 0 var(--space-2);
-  border: none;
-  border-radius: 999px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
   background: transparent;
   color: var(--color-navy);
   font-family: var(--font-body);
   font-size: var(--fs-small);
   font-weight: 700;
   cursor: pointer;
-  transition: transform 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 .pager__page:hover:not(:disabled) {
-  background: rgba(27, 138, 75, 0.08);
+  background: rgba(1, 125, 132, 0.08);
 }
 
 .pager__page--active {
   background: var(--color-navy);
   color: var(--text-on-brand);
-  box-shadow: 0 4px 10px rgba(27, 59, 96, 0.18);
 }
 
 .pager__page--ellipsis {

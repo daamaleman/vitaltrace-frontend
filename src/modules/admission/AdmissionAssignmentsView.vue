@@ -4,7 +4,7 @@
  * Lists patients with their current care team (primary doctor, nurse) and
  * lets Admission jump to the patient detail to manage assignments (§8.4).
  */
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { admissionService } from '@/services/admission.service'
 import { mapHttpError } from '@/utils/httpErrors'
@@ -12,13 +12,12 @@ import LoadingSkeleton from '@/components/common/LoadingSkeleton.vue'
 import EmptyState from '@/components/common/EmptyState.vue'
 import ErrorState from '@/components/common/ErrorState.vue'
 import AppPagination from '@/components/common/AppPagination.vue'
+import { usePagination } from '@/composables/usePagination'
 
 const router = useRouter()
 const patients = ref([])
 const loading = ref(false)
 const error = ref('')
-const page = ref(1)
-const pageSize = 10
 
 function patientName(patient) {
   const p = patient.person
@@ -49,11 +48,7 @@ function manage(patient) {
   router.push({ name: 'admission-patient-edit', params: { id: patient.id } })
 }
 
-const totalPages = computed(() => Math.max(1, Math.ceil(patients.value.length / pageSize)))
-const pagedPatients = computed(() => {
-  const currentPage = Math.min(page.value, totalPages.value)
-  return patients.value.slice((currentPage - 1) * pageSize, currentPage * pageSize)
-})
+const { page, totalPages, totalItems, paged: pagedPatients } = usePagination(patients, { pageSize: 10 })
 
 async function load() {
   loading.value = true
@@ -81,33 +76,35 @@ onMounted(load)
     <ErrorState v-else-if="error" :message="error" @retry="load" />
     <EmptyState v-else-if="patients.length === 0" title="Sin pacientes" />
 
-    <div v-else class="vt-card asg__panel">
-      <table class="asg__table">
-        <thead>
-          <tr><th>Paciente</th><th>Médico principal</th><th>Enfermero</th><th></th></tr>
-        </thead>
-        <tbody>
-          <tr v-for="patient in pagedPatients" :key="patient.id">
-            <td class="asg__name">
-              {{ patientName(patient) }}
-              <span class="asg__record">{{ patient.record_number }}</span>
-            </td>
-            <td>
-              <span v-if="primaryDoctor(patient)" class="asg__staff">{{ primaryDoctor(patient) }}</span>
-              <span v-else class="asg__none">Sin asignar</span>
-            </td>
-            <td>
-              <span v-if="nurse(patient)" class="asg__staff">{{ nurse(patient) }}</span>
-              <span v-else class="asg__none">Sin asignar</span>
-            </td>
-            <td class="asg__actions">
-              <button type="button" class="asg__btn" @click="manage(patient)">Gestionar</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      <AppPagination v-model:page="page" :total-pages="totalPages" :total-items="patients.length" label="Pacientes" />
-    </div>
+    <template v-else>
+      <div class="vt-card asg__panel">
+        <table class="asg__table">
+          <thead>
+            <tr><th>Paciente</th><th>Médico principal</th><th>Enfermero</th><th></th></tr>
+          </thead>
+          <tbody>
+            <tr v-for="patient in pagedPatients" :key="patient.id">
+              <td class="asg__name">
+                {{ patientName(patient) }}
+                <span class="asg__record">{{ patient.record_number }}</span>
+              </td>
+              <td>
+                <span v-if="primaryDoctor(patient)" class="asg__staff">{{ primaryDoctor(patient) }}</span>
+                <span v-else class="asg__none">Sin asignar</span>
+              </td>
+              <td>
+                <span v-if="nurse(patient)" class="asg__staff">{{ nurse(patient) }}</span>
+                <span v-else class="asg__none">Sin asignar</span>
+              </td>
+              <td class="asg__actions">
+                <button type="button" class="asg__btn" @click="manage(patient)">Gestionar</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <AppPagination v-model:page="page" :total-pages="totalPages" :total-items="totalItems" label="Pacientes" />
+    </template>
   </div>
 </template>
 

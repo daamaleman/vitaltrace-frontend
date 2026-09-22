@@ -11,14 +11,13 @@ import LoadingSkeleton from '@/components/common/LoadingSkeleton.vue'
 import EmptyState from '@/components/common/EmptyState.vue'
 import ErrorState from '@/components/common/ErrorState.vue'
 import AppPagination from '@/components/common/AppPagination.vue'
+import { usePagination } from '@/composables/usePagination'
 
 const logs = ref([])
 const loading = ref(false)
 const error = ref('')
 const search = ref('')
 const actionFilter = ref('ALL')
-const page = ref(1)
-const pageSize = 8
 
 const actionFilters = [
   { value: 'ALL', label: 'Todas' },
@@ -43,11 +42,7 @@ const filtered = computed(() => {
   })
 })
 
-const totalPages = computed(() => Math.max(1, Math.ceil(filtered.value.length / pageSize)))
-const pagedLogs = computed(() => {
-  const currentPage = Math.min(page.value, totalPages.value)
-  return filtered.value.slice((currentPage - 1) * pageSize, currentPage * pageSize)
-})
+const { page, totalPages, totalItems, paged: pagedLogs } = usePagination(filtered, { pageSize: 8 })
 
 function actorName(log) {
   const person = log.user?.person
@@ -140,7 +135,7 @@ onMounted(load)
           <span v-if="log.ip_address" class="ad__ip">{{ log.ip_address }}</span>
         </div>
       </article>
-      <AppPagination v-model:page="page" :total-pages="totalPages" :total-items="filtered.length" label="Eventos" />
+      <AppPagination v-model:page="page" :total-pages="totalPages" :total-items="totalItems" label="Eventos" />
     </div>
   </div>
 </template>
