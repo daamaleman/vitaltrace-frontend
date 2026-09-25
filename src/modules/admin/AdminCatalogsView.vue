@@ -261,9 +261,9 @@ onMounted(load)
       <div class="vt-card cat__panel">
       <table class="cat__table">
         <thead>
-          <tr v-if="activeTab === 'specialties'"><th>Nombre</th><th>Descripción</th><th>Estado</th><th>Acciones</th></tr>
-          <tr v-else-if="activeTab === 'medications'"><th>Nombre genérico</th><th>Presentación</th><th>Estado</th><th>Acciones</th></tr>
-          <tr v-else><th>Nombre</th><th>Unidad</th><th>Decimales</th><th>Estado</th><th>Acciones</th></tr>
+          <tr v-if="activeTab === 'specialties'"><th>Nombre</th><th>Descripción</th><th>Estado</th><th class="cat__actions-col">Acciones</th></tr>
+          <tr v-else-if="activeTab === 'medications'"><th>Nombre genérico</th><th>Presentación</th><th>Estado</th><th class="cat__actions-col">Acciones</th></tr>
+          <tr v-else><th>Nombre</th><th>Unidad</th><th>Decimales</th><th>Estado</th><th class="cat__actions-col">Acciones</th></tr>
         </thead>
         <tbody>
           <tr v-for="item in pagedList" :key="item.id">
@@ -281,11 +281,13 @@ onMounted(load)
               <td class="cat__meta">{{ item.decimals }}</td>
             </template>
             <td><StatusBadge :value="statusValue(item.active)" kind="clinical" /></td>
-            <td class="cat__row-actions">
-              <button type="button" class="cat__link" @click="openEdit(item)">Editar</button>
-              <button type="button" class="cat__link" :disabled="togglingId === item.id" @click="toggleActive(item)">
-                {{ item.active ? 'Desactivar' : 'Activar' }}
-              </button>
+            <td class="cat__actions-cell">
+              <div class="cat__row-actions">
+                <button type="button" class="cat__link" @click="openEdit(item)">Editar</button>
+                <button type="button" class="cat__link" :disabled="togglingId === item.id" @click="toggleActive(item)">
+                  {{ item.active ? 'Desactivar' : 'Activar' }}
+                </button>
+              </div>
             </td>
           </tr>
           <tr v-if="filteredList.length === 0"><td :colspan="activeTab === 'measurementTypes' ? 5 : 4" class="cat__empty">Sin registros</td></tr>
@@ -325,8 +327,30 @@ onMounted(load)
 .cat__name { font-weight: 600; color: var(--color-navy); }
 .cat__meta { color: var(--color-dark); opacity: 0.8; font-size: var(--fs-small); }
 .cat__empty { text-align: center; color: var(--color-dark); opacity: 0.6; }
-.cat__row-actions { display: flex; gap: var(--space-3); }
+.cat__actions-col,
+.cat__actions-cell {
+  white-space: nowrap;
+  width: 1%;
+}
+.cat__row-actions { display: flex; gap: var(--space-3); justify-content: flex-end; }
 .cat__link { background: none; border: none; color: var(--color-teal); font-weight: 600; font-size: var(--fs-small); cursor: pointer; padding: 0; }
 .cat__link:hover { text-decoration: underline; }
 .cat__link:disabled { opacity: 0.5; cursor: default; }
+
+@media (max-width: 720px) {
+  .cat__table thead { display: none; }
+  .cat__table,
+  .cat__table tbody,
+  .cat__table tr,
+  .cat__table td { display: block; width: 100%; }
+  .cat__table tr {
+    margin-bottom: var(--space-4);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: var(--space-3);
+  }
+  .cat__table td { border: none; padding: var(--space-2) 0; }
+  .cat__actions-cell { white-space: normal; width: auto; }
+  .cat__row-actions { justify-content: flex-start; flex-wrap: wrap; }
+}
 </style>
