@@ -3,7 +3,7 @@
  * Admin panel: audit log (RN-15).
  * Read-only trace of system actions: who did what, when, on which record.
  */
-import { ref, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { adminService } from '@/services/admin.service'
 import { mapHttpError } from '@/utils/httpErrors'
 import { formatDateTime } from '@/utils/formatters'
@@ -17,7 +17,16 @@ const logs = ref([])
 const loading = ref(false)
 const error = ref('')
 const search = ref('')
-const actionFilter = ref('ALL')
+
+// Filtros que consultan al backend
+const filters = reactive({
+  action: 'ALL',
+  table: '',
+  user_id: '',
+  record_id: '',
+  from: '',
+  to: '',
+})
 
 const actionFilters = [
   { value: 'ALL', label: 'Todas' },
@@ -25,14 +34,15 @@ const actionFilters = [
   { value: 'UPDATE', label: 'Actualización' },
   { value: 'DELETE', label: 'Eliminación' },
   { value: 'ACCESS', label: 'Acceso' },
+  { value: 'LOGIN', label: 'Inicio de sesión' },
+  { value: 'LOGOUT', label: 'Cierre de sesión' },
 ]
 
+// Refinamiento local por texto sobre lo que devolvió el servidor
 const filtered = computed(() => {
   const term = search.value.trim().toLowerCase()
+  if (!term) return logs.value
   return logs.value.filter((l) => {
-    if (actionFilter.value !== 'ALL' && l.action !== actionFilter.value) return false
-    if (!term) return true
-
     const actor = actorName(l).toLowerCase()
     const note = (noteFrom(l) ?? '').toLowerCase()
     const table = (l.table ?? '').toLowerCase()
@@ -71,12 +81,38 @@ async function load() {
   loading.value = true
   error.value = ''
   try {
-    logs.value = await adminService.auditLogs()
+    const params = {}
+    if (filters.action !== 'ALL') params.action = filters.action
+    if (filters.table) params.table = filters.table.trim()
+    if (filters.user_id) params.user_id = filters.user_id
+    if (filters.record_id) params.record_id = filters.record_id
+    if (filters.from) params.from = filters.from
+    if (filters.to) params.to = filters.to
+    logs.value = await adminService.auditLogs(params)
+    page.value = 1
   } catch (err) {
     error.value = mapHttpError(err)
   } finally {
     loading.value = false
   }
+}
+
+function setAction(value) {
+  filters.action = value
+  load()
+}
+function applyFilters() {
+  load()
+}
+function clearFilters() {
+  filters.action = 'ALL'
+  filters.table = ''
+  filters.user_id = ''
+  filters.record_id = ''
+  filters.from = ''
+  filters.to = ''
+  search.value = ''
+  load()
 }
 
 onMounted(load)
@@ -95,20 +131,30 @@ onMounted(load)
         :key="f.value"
         type="button"
         class="ad__filter"
-        :class="{ 'ad__filter--active': actionFilter === f.value }"
-        @click="actionFilter = f.value"
+        :class="{ 'ad__filter--active': filters.action === f.value }"
+        @click="setAction(f.value)"
       >
         {{ f.label }}
       </button>
     </nav>
+
+    <div class="ad__advanced">
+      <input v-model="filters.table" type="text" class="ad__field" placeholder="Tabla (p. ej. users)" @keyup.enter="applyFilters" />
+      <input v-model="filters.record_id" type="number" class="ad__field ad__field--sm" placeholder="Registro #" @keyup.enter="applyFilters" />
+      <input v-model="filters.user_id" type="number" class="ad__field ad__field--sm" placeholder="Usuario #" @keyup.enter="applyFilters" />
+      <label class="ad__date">Desde <input v-model="filters.from" type="date" class="ad__field" /></label>
+      <label class="ad__date">Hasta <input v-model="filters.to" type="date" class="ad__field" /></label>
+      <button type="button" class="ad__apply" @click="applyFilters">Aplicar</button>
+      <button type="button" class="ad__clear" @click="clearFilters">Limpiar</button>
+    </div>
 
     <div class="ad__searchbar">
       <input
         v-model="search"
         type="search"
         class="ad__search"
-        placeholder="Buscar por usuario, tabla, IP o nota…"
-        aria-label="Buscar auditoría"
+        placeholder="Refinar resultados por usuario, tabla, IP o registro…"
+        aria-label="Buscar en resultados"
       />
     </div>
 
@@ -151,6 +197,13 @@ onMounted(load)
   min-height: 40px; padding: 0 var(--space-4); cursor: pointer;
 }
 .ad__filter--active { background: var(--color-navy); color: var(--text-on-brand); border-color: var(--color-navy); }
+.ad__advanced { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-4); align-items: center; }
+.ad__field { font-family: var(--font-body); font-size: var(--fs-small); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); min-height: 38px; padding: 0 var(--space-3); background: var(--bg-card); }
+.ad__field--sm { max-width: 110px; }
+.ad__date { font-size: var(--fs-small); color: var(--color-dark); opacity: 0.8; display: flex; align-items: center; gap: 4px; }
+.ad__apply, .ad__clear { font-family: var(--font-body); font-size: var(--fs-small); font-weight: 600; min-height: 38px; padding: 0 var(--space-4); border-radius: var(--radius-md); cursor: pointer; border: 1px solid var(--border-subtle); }
+.ad__apply { background: var(--color-navy); color: #fff; border-color: var(--color-navy); }
+.ad__clear { background: var(--bg-card); color: var(--color-navy); }
 .ad__searchbar { margin-bottom: var(--space-4); }
 .ad__search {
   width: 100%; max-width: 420px;

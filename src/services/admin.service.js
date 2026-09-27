@@ -34,8 +34,8 @@ export const adminService = {
   },
 
   // Audit logs
-  async auditLogs() {
-    const { data } = await http.get('/audit-logs')
+  async auditLogs(params = {}) {
+    const { data } = await http.get('/audit-logs', { params })
     return data?.data?.data || data?.data || data || []
   },
 
