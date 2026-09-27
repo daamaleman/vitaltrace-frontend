@@ -62,9 +62,9 @@ export function sanitizeName(value = '', maxLength = 150) {
   return clampLength(nextValue.trimStart(), maxLength)
 }
 
-export function sanitizePhone(value = '') {
+export function sanitizePhone(value = '', maxLength = 15) {
   const nextValue = stripEmojis(String(value ?? '')).replace(CONTROL_CHARACTERS, '')
-  return clampLength(nextValue.replace(/\D/g, ''), 15)
+  return clampLength(nextValue.replace(/\D/g, ''), maxLength)
 }
 
 export function sanitizeEmail(value = '', maxLength = 254) {
@@ -87,7 +87,7 @@ export function sanitizeFieldValue(value, { kind = 'text', maxLength } = {}) {
     case 'name':
       return sanitizeName(value, maxLength ?? 150)
     case 'phone':
-      return sanitizePhone(value)
+      return sanitizePhone(value, maxLength ?? 15)
     case 'email':
       return sanitizeEmail(value, maxLength ?? 254)
     case 'number':

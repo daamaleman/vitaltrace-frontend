@@ -127,10 +127,10 @@ onMounted(() => {
       <div class="vt-card pf__section">
         <h3 class="pf__section-title">Información personal</h3>
         <div class="pf__grid">
-          <AppFormField v-model="form.first_name" kind="name" label="Primer nombre" required :error="fieldErrors.first_name" />
-          <AppFormField v-model="form.middle_name" kind="name" label="Segundo nombre" :error="fieldErrors.middle_name" />
-          <AppFormField v-model="form.first_last_name" kind="name" label="Primer apellido" required :error="fieldErrors.first_last_name" />
-          <AppFormField v-model="form.second_last_name" kind="name" label="Segundo apellido" :error="fieldErrors.second_last_name" />
+          <AppFormField v-model="form.first_name" kind="name" label="Primer nombre" :maxlength="80" required :error="fieldErrors.first_name" />
+          <AppFormField v-model="form.middle_name" kind="name" label="Segundo nombre" :maxlength="80" :error="fieldErrors.middle_name" />
+          <AppFormField v-model="form.first_last_name" kind="name" label="Primer apellido" :maxlength="80" required :error="fieldErrors.first_last_name" />
+          <AppFormField v-model="form.second_last_name" kind="name" label="Segundo apellido" :maxlength="80" :error="fieldErrors.second_last_name" />
           <AppFormField v-model="form.date_of_birth" label="Fecha de nacimiento" type="date" required :error="fieldErrors.date_of_birth" />
           <div class="pf__field">
             <label class="pf__label" for="gender">Sexo</label>
@@ -138,8 +138,8 @@ onMounted(() => {
               <option v-for="o in genderOptions" :key="o.value" :value="o.value">{{ o.label }}</option>
             </select>
           </div>
-          <AppFormField v-model="form.identity_document" label="Documento de identidad" :maxlength="50" :error="fieldErrors.identity_document" />
-          <AppFormField v-model="form.phone" kind="phone" label="Teléfono" :error="fieldErrors.phone" />
+          <AppFormField v-model="form.identity_document" label="Documento de identidad" :maxlength="40" :error="fieldErrors.identity_document" />
+          <AppFormField v-model="form.phone" kind="phone" label="Teléfono" :maxlength="25" :error="fieldErrors.phone" />
         </div>
         <AppFormField v-model="form.address" label="Dirección" :maxlength="200" :error="fieldErrors.address" />
       </div>
@@ -147,7 +147,7 @@ onMounted(() => {
       <div class="vt-card pf__section">
         <h3 class="pf__section-title">Información administrativa</h3>
         <div class="pf__grid">
-          <AppFormField v-model="form.record_number" label="Número de expediente" required :error="fieldErrors.record_number" />
+          <AppFormField v-model="form.record_number" label="Número de expediente" :maxlength="30" required :error="fieldErrors.record_number" />
           <AppFormField v-model="form.admission_date" label="Fecha de ingreso" type="date" required :error="fieldErrors.admission_date" />
           <div class="pf__field">
             <label class="pf__label" for="status">Estado administrativo</label>
@@ -155,8 +155,8 @@ onMounted(() => {
               <option v-for="o in statusOptions" :key="o.value" :value="o.value">{{ o.label }}</option>
             </select>
           </div>
-          <AppFormField v-model="form.emergency_contact_name" kind="name" label="Nombre de contacto de emergencia" :error="fieldErrors.emergency_contact_name" />
-          <AppFormField v-model="form.emergency_contact_phone" kind="phone" label="Teléfono de contacto de emergencia" :error="fieldErrors.emergency_contact_phone" />
+          <AppFormField v-model="form.emergency_contact_name" kind="name" label="Nombre de contacto de emergencia" :maxlength="160" :error="fieldErrors.emergency_contact_name" />
+          <AppFormField v-model="form.emergency_contact_phone" kind="phone" label="Teléfono de contacto de emergencia" :maxlength="25" :error="fieldErrors.emergency_contact_phone" />
         </div>
         <AppFormField v-model="form.administrative_notes" label="Notas administrativas" :maxlength="500" :error="fieldErrors.administrative_notes" />
       </div>
