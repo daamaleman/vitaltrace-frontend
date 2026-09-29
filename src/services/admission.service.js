@@ -101,6 +101,11 @@ export const admissionService = {
     return data.data
   },
 
+  async correctPatient(patientId, payload) {
+    const { data } = await http.post(`/admission/patients/${patientId}/corrections`, payload)
+    return data.data
+  },
+
   async accounts() {
     const { data } = await http.get('/admission/accounts')
     return data.data
