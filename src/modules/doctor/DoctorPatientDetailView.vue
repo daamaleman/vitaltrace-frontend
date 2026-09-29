@@ -49,6 +49,16 @@ const measurements = computed(() => summary.value?.measurements ?? [])
 const diagnoses = computed(() => summary.value?.diagnoses ?? [])
 const evolutions = computed(() => summary.value?.evolutions ?? [])
 const treatments = computed(() => summary.value?.treatments ?? [])
+const ranges = computed(() => summary.value?.ranges ?? [])
+
+function rangeTypeLabel(r) {
+  return r.measurement_type?.name
+    ?? measurementTypes.find((t) => t.value === Number(r.measurement_type_id))?.label
+    ?? `Tipo ${r.measurement_type_id}`
+}
+function severityLabel(value) {
+  return severities.find((s) => s.value === value)?.label ?? value
+}
 
 const toast = useToastStore()
 
@@ -545,7 +555,21 @@ onMounted(() => {
             <AppButton variant="primary" :loading="savingRange" loading-label="Guardando…" @click="submitRange">Guardar</AppButton>
           </div>
         </div>
-        <EmptyState v-if="!showRangeForm" title="Define rangos para generar alertas automáticas" />
+        <EmptyState v-if="ranges.length === 0 && !showRangeForm" title="Define rangos para generar alertas automáticas" />
+        <ul v-else-if="ranges.length" class="patient__list">
+          <li v-for="r in ranges" :key="r.id" class="patient__item">
+            <div class="patient__item-head">
+              <span class="patient__item-title">{{ rangeTypeLabel(r) }}</span>
+              <StatusBadge :value="r.severity" kind="clinical" />
+            </div>
+            <div class="patient__meta">
+              Rango: {{ r.min_value ?? '—' }} – {{ r.max_value ?? '—' }}
+              · severidad {{ severityLabel(r.severity) }}
+              · desde {{ formatDateTime(r.start_date) }}
+              <span v-if="r.end_date"> hasta {{ formatDateTime(r.end_date) }}</span>
+            </div>
+          </li>
+        </ul>
       </section>
 
       <!-- Appointments -->
