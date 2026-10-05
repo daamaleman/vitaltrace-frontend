@@ -171,7 +171,7 @@ onMounted(load)
           </div>
           <p class="ad__action">
             <strong>{{ actionLabel(log.action) }}</strong>
-            en <code>{{ log.table }}</code>
+            <template v-if="log.table"> en <code>{{ log.table }}</code></template>
             <span v-if="log.record_id"> · registro #{{ log.record_id }}</span>
           </p>
           <p v-if="noteFrom(log)" class="ad__note">{{ noteFrom(log) }}</p>
