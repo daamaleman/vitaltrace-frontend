@@ -22,6 +22,7 @@ const search = ref('')
 const filters = reactive({
   action: 'ALL',
   table: '',
+  module: '',
   user_id: '',
   record_id: '',
   from: '',
@@ -63,8 +64,19 @@ function actorName(log) {
 function actionLabel(action) {
   return {
     CREATE: 'Creó', UPDATE: 'Actualizó', DELETE: 'Eliminó',
-    ACCESS: 'Accedió', LOGIN: 'Inició sesión', LOGOUT: 'Cerró sesión',
+    LOGIN: 'Inició sesión en', LOGOUT: 'Cerró sesión en', ACCESS: 'Accedió a',
   }[action] ?? action
+}
+
+function eventText(log) {
+  const who = actionLabel(log.action)
+  if (['LOGIN', 'LOGOUT', 'ACCESS'].includes(log.action)) {
+    return log.module ? `${who} ${log.module}` : who
+  }
+  if (log.table) {
+    return `${who} en ${log.table}${log.record_id ? ` · registro #${log.record_id}` : ''}`
+  }
+  return who
 }
 
 function noteFrom(log) {
@@ -84,6 +96,7 @@ async function load() {
     const params = {}
     if (filters.action !== 'ALL') params.action = filters.action
     if (filters.table) params.table = filters.table.trim()
+    if (filters.module) params.module = filters.module.trim()
     if (filters.user_id) params.user_id = filters.user_id
     if (filters.record_id) params.record_id = filters.record_id
     if (filters.from) params.from = filters.from
@@ -107,6 +120,7 @@ function applyFilters() {
 function clearFilters() {
   filters.action = 'ALL'
   filters.table = ''
+  filters.module = ''
   filters.user_id = ''
   filters.record_id = ''
   filters.from = ''
@@ -140,6 +154,7 @@ onMounted(load)
 
     <div class="ad__advanced">
       <input v-model="filters.table" type="text" class="ad__field" placeholder="Tabla (p. ej. users)" @keyup.enter="applyFilters" />
+      <input v-model="filters.module" type="text" class="ad__field" placeholder="Módulo o portal" @keyup.enter="applyFilters" />
       <input v-model="filters.record_id" type="number" class="ad__field ad__field--sm" placeholder="Registro #" @keyup.enter="applyFilters" />
       <input v-model="filters.user_id" type="number" class="ad__field ad__field--sm" placeholder="Usuario #" @keyup.enter="applyFilters" />
       <label class="ad__date">Desde <input v-model="filters.from" type="date" class="ad__field" /></label>
@@ -170,9 +185,12 @@ onMounted(load)
             <span class="ad__role">{{ log.role_snapshot }}</span>
           </div>
           <p class="ad__action">
-            <strong>{{ actionLabel(log.action) }}</strong>
-            <template v-if="log.table"> en <code>{{ log.table }}</code></template>
-            <span v-if="log.record_id"> · registro #{{ log.record_id }}</span>
+            <strong v-if="['LOGIN','LOGOUT','ACCESS'].includes(log.action)">{{ eventText(log) }}</strong>
+            <template v-else>
+              <strong>{{ actionLabel(log.action) }}</strong>
+              <template v-if="log.table"> en <code>{{ log.table }}</code></template>
+              <span v-if="log.record_id"> · registro #{{ log.record_id }}</span>
+            </template>
           </p>
           <p v-if="noteFrom(log)" class="ad__note">{{ noteFrom(log) }}</p>
         </div>
