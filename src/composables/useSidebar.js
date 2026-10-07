@@ -7,6 +7,17 @@ import { ref } from 'vue'
  */
 const isOpen = ref(false)
 
+// Desktop collapse (icon-only rail with just the logo). Persisted so the
+// preference survives a reload.
+const COLLAPSE_KEY = 'vt-sidebar-collapsed'
+let storedCollapsed = false
+try {
+  storedCollapsed = localStorage.getItem(COLLAPSE_KEY) === '1'
+} catch {
+  storedCollapsed = false
+}
+const collapsed = ref(storedCollapsed)
+
 export function useSidebar() {
   function open() {
     isOpen.value = true
@@ -20,5 +31,14 @@ export function useSidebar() {
     isOpen.value = !isOpen.value
   }
 
-  return { isOpen, open, close, toggle }
+  function toggleCollapsed() {
+    collapsed.value = !collapsed.value
+    try {
+      localStorage.setItem(COLLAPSE_KEY, collapsed.value ? '1' : '0')
+    } catch {
+      // Ignore storage errors (private browsing, quota, etc.).
+    }
+  }
+
+  return { isOpen, open, close, toggle, collapsed, toggleCollapsed }
 }

@@ -8,7 +8,7 @@ import { useSidebar } from '@/composables/useSidebar'
 import logoMark from '@/assets/Isotipo-reversed.png'
 
 const authStore = useAuthStore()
-const { isOpen, close } = useSidebar()
+const { isOpen, close, collapsed, toggleCollapsed } = useSidebar()
 
 const doctorMenu = [
   { name: 'doctor-alerts', label: 'Alertas' },
@@ -42,12 +42,21 @@ const menu = computed(() => {
 </script>
 
 <template>
-  <aside class="sidebar" :class="{ 'sidebar--open': isOpen }">
+  <aside class="sidebar" :class="{ 'sidebar--open': isOpen, 'sidebar--collapsed': collapsed }">
     <div class="sidebar__brand">
       <span class="sidebar__mark">
         <img :src="logoMark" alt="" class="sidebar__mark-img" />
       </span>
       <span class="sidebar__brand-text">Vital<strong>Trace</strong></span>
+      <button
+        type="button"
+        class="sidebar__collapse-btn"
+        :aria-label="collapsed ? 'Expandir menú' : 'Contraer menú'"
+        :aria-pressed="collapsed"
+        @click="toggleCollapsed"
+      >
+        <span aria-hidden="true">{{ collapsed ? '›' : '‹' }}</span>
+      </button>
     </div>
     <nav class="sidebar__nav" aria-label="Navegación principal">
       <router-link
@@ -72,6 +81,12 @@ const menu = computed(() => {
   display: flex;
   flex-direction: column;
   padding: var(--space-5) var(--space-3);
+  flex-shrink: 0;
+  transition: width 0.18s ease;
+}
+
+.sidebar--collapsed {
+  width: 76px;
 }
 
 .sidebar__brand {
@@ -80,6 +95,45 @@ const menu = computed(() => {
   gap: var(--space-2);
   padding: 0 var(--space-3);
   margin-bottom: var(--space-6);
+}
+
+.sidebar--collapsed .sidebar__brand {
+  justify-content: center;
+  padding: 0;
+}
+
+.sidebar--collapsed .sidebar__brand-text {
+  display: none;
+}
+
+.sidebar--collapsed .sidebar__nav {
+  display: none;
+}
+
+.sidebar__collapse-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  margin-left: auto;
+  font-size: 16px;
+  line-height: 1;
+  color: var(--text-on-brand);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.sidebar__collapse-btn:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.sidebar--collapsed .sidebar__collapse-btn {
+  margin-left: 0;
 }
 
 .sidebar__mark {
@@ -151,6 +205,29 @@ const menu = computed(() => {
 
   .sidebar--open {
     transform: translateX(0);
+  }
+
+  /* The desktop collapse rail doesn't apply to the mobile overlay drawer:
+     it's already fully hidden/shown via the topbar hamburger. */
+  .sidebar--collapsed {
+    width: 240px;
+  }
+
+  .sidebar--collapsed .sidebar__brand {
+    justify-content: flex-start;
+    padding: 0 var(--space-3);
+  }
+
+  .sidebar--collapsed .sidebar__brand-text {
+    display: inline;
+  }
+
+  .sidebar--collapsed .sidebar__nav {
+    display: flex;
+  }
+
+  .sidebar__collapse-btn {
+    display: none;
   }
 }
 </style>
