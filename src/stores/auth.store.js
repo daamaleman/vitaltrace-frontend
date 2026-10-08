@@ -31,18 +31,26 @@ export const useAuthStore = defineStore('auth', {
 
   actions: {
     /**
-     * Authenticate and load the user profile.
-     *
-     * The login response already includes the user, but we still confirm
-     * the session with /me before resolving: right after login the session
-     * cookie can briefly lag the backend's session write, so navigating
-     * immediately can hit a stale 401. Retrying /me absorbs that window
-     * instead of letting the UI race it.
+     * Step 1: validate credentials. Returns the 2FA challenge; does NOT
+     * create a session. The UI then collects the emailed code.
      */
     async login(credentials) {
       this.loading = true
       try {
-        const user = await authService.login(credentials)
+        return await authService.login(credentials)
+      } finally {
+        this.loading = false
+      }
+    },
+
+    /**
+     * Step 2: verify the 2FA code and load the session.
+     * Confirms with /me (with retry) to absorb the cookie-write lag.
+     */
+    async verifyTwoFactor({ challengeId, code }) {
+      this.loading = true
+      try {
+        const user = await authService.verifyTwoFactor({ challengeId, code })
 
         let confirmed = null
         for (let attempt = 0; attempt < 3; attempt += 1) {
@@ -61,6 +69,10 @@ export const useAuthStore = defineStore('auth', {
       } finally {
         this.loading = false
       }
+    },
+
+    async resendTwoFactor(challengeId) {
+      return await authService.resendTwoFactor(challengeId)
     },
 
     /**

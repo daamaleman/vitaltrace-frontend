@@ -30,21 +30,50 @@ const password = ref('')
 const formError = ref('')
 const fieldErrors = ref({})
 
+// --- Estado del paso 2FA ---
+const step = ref('credentials')
+const challengeId = ref('')
+const emailHint = ref('')
+const code = ref('')
+const resending = ref(false)
+const resentMessage = ref('')
+
 const roleOptions = [
   { value: 'DOCTOR', label: 'Médico' },
   { value: 'ADMISSION', label: 'Admisión' },
 ]
 
+// Paso 1: validar credenciales → recibir challenge 2FA
 async function handleSubmit() {
   formError.value = ''
   fieldErrors.value = {}
   try {
-    await authStore.login({ email: email.value, password: password.value })
+    const challenge = await authStore.login({ email: email.value, password: password.value })
+    challengeId.value = challenge.challenge_id
+    emailHint.value = challenge.email_hint ?? ''
+    step.value = 'code'
+  } catch (error) {
+    if (error.status === 422 && error.errors) {
+      fieldErrors.value = Object.fromEntries(
+        Object.entries(error.errors).map(([k, v]) => [k, Array.isArray(v) ? v[0] : v]),
+      )
+    } else {
+      formError.value = mapHttpError(error)
+    }
+  }
+}
 
-    // Validate that the user's real role matches the selected area.
+// Paso 2: verificar el código → crear sesión y validar área
+async function handleVerify() {
+  formError.value = ''
+  fieldErrors.value = {}
+  try {
+    await authStore.verifyTwoFactor({ challengeId: challengeId.value, code: code.value })
+
     if (!authStore.hasRole(selectedRole.value)) {
       const areaLabel = roleOptions.find((o) => o.value === selectedRole.value)?.label ?? ''
       await authStore.logout()
+      resetFlow()
       formError.value = `Este correo no corresponde al área de ${areaLabel}. Verifica el área seleccionada.`
       return
     }
@@ -59,6 +88,27 @@ async function handleSubmit() {
       formError.value = mapHttpError(error)
     }
   }
+}
+
+async function handleResend() {
+  resending.value = true
+  resentMessage.value = ''
+  formError.value = ''
+  try {
+    challengeId.value = await authStore.resendTwoFactor(challengeId.value)
+    resentMessage.value = 'Te enviamos un nuevo código.'
+  } catch (error) {
+    formError.value = mapHttpError(error)
+  } finally {
+    resending.value = false
+  }
+}
+
+function resetFlow() {
+  step.value = 'credentials'
+  challengeId.value = ''
+  code.value = ''
+  password.value = ''
 }
 </script>
 
@@ -86,7 +136,8 @@ async function handleSubmit() {
 
       <p v-if="idleMessage" class="login__idle" role="status">{{ idleMessage }}</p>
 
-      <form @submit.prevent="handleSubmit">
+      <!-- Paso 1: credenciales -->
+      <form v-if="step === 'credentials'" @submit.prevent="handleSubmit">
         <AppFormField
           v-model="email"
           label="Correo electrónico"
@@ -111,10 +162,50 @@ async function handleSubmit() {
           type="submit"
           class="login__submit"
           :loading="authStore.loading"
-          loading-label="Iniciando sesión…"
+          loading-label="Verificando…"
         >
-          Iniciar sesión
+          Continuar
         </AppButton>
+      </form>
+
+      <!-- Paso 2: código 2FA -->
+      <form v-else @submit.prevent="handleVerify">
+        <p class="login__2fa-intro">
+          Ingresa el código de verificación que enviamos a
+          <strong>{{ emailHint }}</strong>.
+        </p>
+
+        <AppFormField
+          v-model="code"
+          label="Código de verificación"
+          inputmode="numeric"
+          autocomplete="one-time-code"
+          maxlength="6"
+          required
+          :error="fieldErrors.code"
+        />
+
+        <p v-if="resentMessage" class="login__idle" role="status">{{ resentMessage }}</p>
+        <p v-if="formError" class="login__error" role="alert">{{ formError }}</p>
+
+        <AppButton
+          variant="primary"
+          type="submit"
+          class="login__submit"
+          :loading="authStore.loading"
+          loading-label="Verificando…"
+        >
+          Verificar e iniciar sesión
+        </AppButton>
+
+        <div class="login__2fa-actions">
+          <button type="button" class="login__link" :disabled="resending" @click="handleResend">
+            Reenviar código
+          </button>
+          <button type="button" class="login__link" @click="resetFlow">
+            Cambiar correo
+          </button>
+        </div>
       </form>
 
       <p class="login__note">Prototipo académico · Datos ficticios</p>
@@ -207,5 +298,33 @@ async function handleSubmit() {
   font-size: var(--fs-small);
   margin-bottom: var(--space-4);
   text-align: center;
+}
+
+.login__2fa-intro {
+  font-size: var(--fs-small);
+  color: var(--color-dark);
+  margin-bottom: var(--space-4);
+  text-align: center;
+}
+
+.login__2fa-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: var(--space-4);
+}
+
+.login__link {
+  background: none;
+  border: none;
+  color: var(--color-teal);
+  font-weight: 600;
+  font-size: var(--fs-small);
+  cursor: pointer;
+  padding: 0;
+}
+
+.login__link:disabled {
+  opacity: 0.5;
+  cursor: default;
 }
 </style>
