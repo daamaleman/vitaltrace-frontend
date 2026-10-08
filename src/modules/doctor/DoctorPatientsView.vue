@@ -3,7 +3,7 @@
  * Doctor's assigned patients (§7.2).
  *
  * Read-only list of patients actively assigned to the clinician (RN-06).
- * Supports client-side search and navigation to each patient. Administrative
+ * Supports client-side search and navigation to each patient. Administrative 
  * data belongs to Admission; here it is view-only.
  */
 import { ref, computed, onMounted } from 'vue'
