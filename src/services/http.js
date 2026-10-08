@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { useAuthStore } from '@/stores/auth.store'
+import router from '@/router'
 
 /**
  * Central Axios instance for the VitalTrace API.
@@ -42,6 +43,11 @@ http.interceptors.response.use(
     if (status === 401) {
       const authStore = useAuthStore()
       authStore.clearSession()
+
+      const current = router.currentRoute.value
+      if (current.name !== 'login') {
+        router.push({ name: 'login', query: { reason: 'idle' } })
+      }
     }
 
     return Promise.reject({
