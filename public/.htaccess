@@ -1,0 +1,16 @@
+<IfModule mod_mime.c>
+ AddType application/javascript .js
+ AddType text/css .css 
+</IfModule>
+
+ErrorDocument 404 /index.html
+
+<IfModule mod_rewrite.c>
+ RewriteEngine On
+
+ RewriteCond %{REQUEST_FILENAME} -f [OR]
+ RewriteCond %{REQUEST_FILENAME} -d
+ RewriteRule ^ - [L]
+
+ RewriteRule ^(.*)$ /index.html [L]
+</IfModule>

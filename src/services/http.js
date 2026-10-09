@@ -44,8 +44,13 @@ http.interceptors.response.use(
       const authStore = useAuthStore()
       authStore.clearSession()
 
+      // Redirigir al login solo si la ruta actual EXIGE sesión.
+      // En rutas públicas (login, admin-login) un 401 solo significa
+      // "aún no hay sesión" y no debe expulsar al usuario.
       const current = router.currentRoute.value
-      if (current.name !== 'login') {
+      const requiresAuth = current.matched.some((r) => r.meta?.requiresAuth === true)
+
+      if (requiresAuth) {
         router.push({ name: 'login', query: { reason: 'idle' } })
       }
     }
