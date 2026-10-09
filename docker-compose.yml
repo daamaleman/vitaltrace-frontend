@@ -1,0 +1,25 @@
+# ============================================================
+# VitalTrace - App Web | docker-compose
+# Levanta el contenedor de la app web con un solo comando:
+#   docker compose up -d --build
+# Luego abre:  http://localhost:8080
+# ============================================================
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # URL de la API usada al compilar el frontend.
+        VITE_API_URL: https://api.vitaltrace.lat
+    image: vitaltrace-web:latest
+    container_name: vitaltrace-web
+    ports:
+      - "8080:80"        # host:contenedor  → la app queda en localhost:8080
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3

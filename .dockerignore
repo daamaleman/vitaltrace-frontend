@@ -1,0 +1,31 @@
+# Dependencias y artefactos que NO deben entrar al contexto de build
+node_modules
+dist
+dist-ssr
+
+# Entornos locales (los secretos nunca van a la imagen)
+.env
+.env.*
+!.env.example
+
+# Control de versiones y editor
+.git
+.gitignore
+.vscode
+.idea
+
+# Logs y temporales
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store
+
+# Docker (no hace falta copiarse a sí mismo)
+Dockerfile
+.dockerignore
+docker-compose.yml
+
+# Pruebas y cobertura
+coverage
+.nyc_output
